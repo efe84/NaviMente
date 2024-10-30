@@ -9,8 +9,9 @@ using Serilog.Enrichers.Span;
 using Prometheus;
 using NaviMente.WebApi;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using NaviMente.WebApi.Middlewares;
 using NaviMente.WebApi.BackgroundServices;
+using Microsoft.EntityFrameworkCore;
+using NaviMente.WebApi.Middlewares;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -37,6 +38,7 @@ try
     });
 
     builder.Services.AddErrorHandling();
+    builder.Services.AddDbContext<ApplicationContext>();
 
     builder.Services.AddControllers();
 
@@ -66,7 +68,7 @@ try
     app.UseRouting();
 
     app.UseHttpLogging();
-
+    app.UseMiddleware<CriticalExceptionMiddleware>();
     app.UseProblemDetails();
 
     if (app.Environment.IsDevelopment())

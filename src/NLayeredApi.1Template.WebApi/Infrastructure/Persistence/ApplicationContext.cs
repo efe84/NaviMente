@@ -1,30 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
+using NaviMente.WebApi.Domain.Shared.Entities;
 
 namespace NaviMente.WebApi.Infrastructure.Persistence
 {
     public class ApplicationContext : DbContext
     {
+        private readonly IMongoDatabase _database;
 
-        public ApplicationContext() { }
-
-        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public ApplicationContext()
         {
-            base.OnModelCreating(modelBuilder);
+            var connectionString = "mongodb://localhost:27017";
+            var client = new MongoClient(connectionString);
 
-            //modelBuilder.ApplyConfiguration(new Persistence.Configuration.Candidatos.CandidatoConfiguration());
-            //modelBuilder.ApplyConfiguration(new Persistence.Configuration.ProcesosSeleccion.CandidatoConfiguration());
-            //modelBuilder.ApplyConfiguration(new ExperienciaLaboralConfiguration());
-            //modelBuilder.ApplyConfiguration(new CandidaturaConfiguration());
-            //modelBuilder.ApplyConfiguration(new NacionalidadConfiguration());
-            //modelBuilder.ApplyConfiguration(new ProcesoSeleccionConfiguration());
-            //modelBuilder.ApplyConfiguration(new EstadoProcesoSeleccionConfiguration());
-            //modelBuilder.ApplyConfiguration(new EstadoCandidaturaConfiguration());
-            //modelBuilder.ApplyConfiguration(new SectorConfiguration());
-            //modelBuilder.ApplyConfiguration(new PuestoConfiguration());
+            _database = client.GetDatabase("NaviMenteDev");
         }
 
-
+        public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
+        //public IMongoCollection<Device> Devices => _database.GetCollection<Device>("Devices");
+        //public IMongoCollection<Location> Locations => _database.GetCollection<Location>("Locations");
     }
 }

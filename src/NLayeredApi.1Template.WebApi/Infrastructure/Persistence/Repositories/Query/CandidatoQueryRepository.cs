@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NLayeredApi._1Template.WebApi.Infrastructure;
-using NLayeredApi._1Template.WebApi.Dto.Candidatos;
 
 namespace NLayeredApi._1Template.WebApi.Infrastructure.Persistence.Repositories.Query
 {

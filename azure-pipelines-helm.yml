@@ -1,0 +1,201 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+variables:
+- group: 10-GLOBAL
+- template: version-variables-template.yaml
+  # Agent VM image name
+- name: 'vmImageName' 
+  value: 'ubuntu-latest'
+- name: 'appName'
+  value: 'NLayeredApi.1Template'
+- name: 'imageRepositoryNameACR'
+  value: '$(ImagesRepositoryPathACR)/$(appName)'
+- name: 'projectPath' 
+  value: '$(Build.SourcesDirectory)/templates/templates/Api/NLayered/NLayered.Template'
+- name: 'helmPath' 
+  value: '$(projectPath)/deploy/k8s/helm'
+- name: 'version.Revision'  
+  value: $[counter(variables['version.MajorMinor'], 0)]
+- name: 'versionNumber'
+  value: '$(Build.BuildNumber)'
+- name: 'projectName'
+  value: 'NLayeredApi.1Template.WebApi'
+- name: 'projectTestName'
+  value: 'NLayeredApi.1Template.Tests'
+- name: 'projectDatabaseName'
+  value: 'NLayeredApi.1Template.Database'
+- name: 'buildConfiguration'
+  value: 'Release'
+
+trigger:
+  branches:
+    include:
+      - main
+      - development
+      - release
+  paths:
+    include:
+    - $(projectPath)/*
+    - $(helmPath)/*
+
+resources:
+- repo: self
+
+pool:
+  vmImage: $(vmImageName)
+
+stages:
+- stage: Build
+  displayName: 'Build'
+  jobs:
+    - job: 'Build'
+      steps: 
+        - task: UseDotNet@2  
+          inputs:
+            packageType: 'sdk'
+            version: '8.0.x'
+            performMultiLevelLookup: true    
+        - task: SonarCloudPrepare@1
+          inputs:
+            SonarCloud: 'AldabaSonar'
+            organization: 'aldabadev-github'
+            scannerMode: 'MSBuild'
+            projectKey: 'NLayeredApi.1Template'
+            extraProperties: |
+              # Additional properties that will be passed to the scanner, 
+              # Put one key=value per line, example:
+              sonar.exclusions=Database/**, **/SwaggerHelpers.cs
+
+        - task: NuGetAuthenticate@1
+
+        - task: DotNetCoreCLI@2
+          displayName: 'dotnet build $(buildConfiguration)'
+          inputs:
+            command: build
+            projects: '**/$(projectName).csproj'
+            arguments: --configuration $(buildConfiguration)
+
+        - task: DotNetCoreCLI@2
+          displayName: Test dotnet
+          inputs:
+            command: test
+            projects: "**/$(projectTestName).csproj"
+            arguments: >-
+              --configuration $(BuildConfiguration) 
+
+        - task: SonarCloudAnalyze@1
+
+- stage: DBVersioning
+  displayName: 'Database versioning'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - job: Build
+    displayName: Build
+    steps:          
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(projectPath)/src/$(projectDatabaseName)/'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/database'
+        Contents: |
+          Migrations/**
+          appsettings.json
+        OverWrite: true
+        flattenFolders: false
+    
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
+        artifactName: 'drop' 
+
+- stage: Docker
+  displayName: 'Create container'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:  
+  - job: Container
+    displayName: 'Build docker image'
+    steps:
+    - task: Docker@2
+      displayName: Build
+      inputs:
+        containerRegistry: 'acraldaba'
+        repository: '$(imageRepositoryNameACR)'
+        command: 'build'
+        Dockerfile: '$(projectPath)/Dockerfile'
+        tags: |
+          $(Build.BuildNumber)
+          $(Build.BuildNumber)-$(Build.SourceBranchName)
+          latest
+        arguments: '--build-arg FEED_URL=$(AldabaFeedUrl) --build-arg PAT=$(PAT)'
+        
+    - task: Docker@2
+      displayName: Push
+      inputs:
+        containerRegistry: acraldaba
+        repository: '$(imageRepositoryNameACR)'
+        command: 'push'
+        tags: |
+          $(Build.BuildNumber)
+          $(Build.BuildNumber)-$(Build.SourceBranchName)
+          latest
+                    
+    - task: AzureCLI@2
+      displayName: Repository cleanup
+      inputs:
+        azureSubscription: 'AZURE ALDABA'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az acr manifest list-metadata \
+            --name $(imageRepositoryNameACR) \
+            --registry $(ACRName) \
+            --orderby time_desc \
+            --query "[50:].digest" \
+            -o tsv \
+            | xargs -I% az acr repository delete \
+            --name $(ACRName) \
+            --image $(imageRepositoryNameACR)@% \
+            --yes
+
+- stage: 'Helm'
+  displayName: 'Helm Chart'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - job: Helm
+    displayName: 'Helm'
+    steps:      
+    - task: AzureCLI@2
+      displayName: 'Login into ACR'
+      inputs:
+        azureSubscription: 'AZURE ALDABA'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'helm registry login $(ACRServiceName) --username $(ACRClientID) --password $(ACRClientSecret)'
+        addSpnToEnvironment: true      
+    - task: Bash@3
+      displayName: 'Push helm chart to ACR'
+      inputs:
+        targetType: 'inline'
+        script: |      
+          helm package ./NLayeredApi.1Template
+          helm push NLayeredApi.1Template-$(versionNumber).tgz oci://$(ACRName).azurecr.io/$(HelmRepositoryPathACR)
+        workingDirectory: '$(helmPath)' 
+
+    - task: AzureCLI@2
+      displayName: Repository cleanup
+      inputs:
+        azureSubscription: 'AZURE ALDABA'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az acr manifest list-metadata \
+            --name $(HelmRepositoryPathACR)\NLayeredApi.1Template \
+            --registry $(ACRName) \
+            --orderby time_desc \
+            --query "[50:].digest" \
+            -o tsv \
+            | xargs -I% az acr repository delete \
+            --name $(ACRName) \
+            --image $(HelmRepositoryPathACR)\NLayeredApi.1Template@% \
+            --yes

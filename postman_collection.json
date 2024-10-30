@@ -1,0 +1,558 @@
+{
+	"info": {
+		"_postman_id": "a6f24f7c-53f3-4d35-b4f5-1fa9aeab227d",
+		"name": "NLayeredApi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29652318",
+		"_collection_link": "https://red-eclipse-743998.postman.co/workspace/Oficina-t%C3%A9cnica~213e2c32-d62c-451a-9823-b3c86753b642/collection/29652318-a6f24f7c-53f3-4d35-b4f5-1fa9aeab227d?action=share&source=collection_link&creator=29652318"
+	},
+	"item": [
+		{
+			"name": "Candidatos",
+			"item": [
+				{
+					"name": "Obtener candidatos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{BaseUrl}}/api/candidatos",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidatos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear candidato",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nif\": \"33445566A\",\r\n  \"email\": \"trubrocroppaure-36263@yopmail.com\",\r\n  \"apellidos\": \"Del Rosario Lopez\",\r\n  \"nombre\": \"Raquel\",  \r\n  \"fechaNacimiento\": \"1987-02-14\",\r\n  \"idNacionalidad\": 1,\r\n  \"fechaValidezPermisoTrabajo\": \"2023-01-01\"\r\n}"
+						},
+						"url": {
+							"raw": "{{BaseUrl}}/api/candidatos",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidatos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar candidato",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/candidatos/12",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidatos",
+								"12"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener candidato",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/candidatos/30007",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidatos",
+								"30007"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Modificar candidato",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 1,\r\n    \"nif\": \"33445566A \",\r\n    \"apellidos\": \"Del Rosario Lopez\",\r\n    \"nombre\": \"Raquel\",\r\n    \"email\": \"trubrocroppaure-36263@yopmail.com\",\r\n    \"fechaNacimiento\": \"1987-02-14T00:00:00\",\r\n    \"idNacionalidad\": 3,\r\n    \"fechaValidezPermisoTrabajo\": \"2023-01-01T00:00:00\",\r\n    \"experienciaLaboral\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseUrl}}/api/candidatos/1",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidatos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Añadir experiencia laboral",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{  \r\n  \"empresa\": \"Cibeles\",\r\n  \"sector\": 6,\r\n  \"puesto\": 23,\r\n  \"funciones\": \"Ayudar en todo tipo de tareas para las que no era necesaria especialización\",\r\n  \"fechaInicio\": \"2016-02-02\",\r\n  \"fechaFin\": \"2018-02-02\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseUrl}}/api/candidatos/30007/experienciasLaborales",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidatos",
+								"30007",
+								"experienciasLaborales"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar experiencia laboral",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/candidatos/30007/experienciasLaborales/20002",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"candidatos",
+								"30007",
+								"experienciasLaborales",
+								"20002"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Procesos de selección",
+			"item": [
+				{
+					"name": "Listar procesos abiertos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/ProcesosSeleccion?estado=1",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"ProcesosSeleccion"
+							],
+							"query": [
+								{
+									"key": "estado",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Abrir Proceso Seleccion",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"codigo\": \"P002\",\r\n  \"descripcion\": \"Limpiador/a en Fuengirola\",\r\n  \"fechaIncorporacion\": \"2022-09-26\",\r\n  \"vacantes\": 1,\r\n  \"idPuesto\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseUrl}}/api/ProcesosSeleccion",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"ProcesosSeleccion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Incluir Candidato en Proceso",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"idCandidato\" : 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseUrl}}/api/ProcesosSeleccion/1/candidaturas",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"ProcesosSeleccion",
+								"1",
+								"candidaturas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener candidaturas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/ProcesosSeleccion/30002/candidaturas",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"ProcesosSeleccion",
+								"30002",
+								"candidaturas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Seleccionar candidato",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"IdEstado\" :  2\r\n}"
+						},
+						"url": {
+							"raw": "{{BaseUrl}}/api/ProcesosSeleccion/30002/candidaturas/30003",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"ProcesosSeleccion",
+								"30002",
+								"candidaturas",
+								"30003"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Descartar candidato",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"idEstado\" :  3\r\n}"
+						},
+						"url": {
+							"raw": "{{BaseUrl}}/api/ProcesosSeleccion/20004/candidaturas/10002",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"ProcesosSeleccion",
+								"20004",
+								"candidaturas",
+								"10002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cerrar proceso de selección",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/ProcesosSeleccion/10003/cerrar",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"ProcesosSeleccion",
+								"10003",
+								"cerrar"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Maestros",
+			"item": [
+				{
+					"name": "Obtener sectores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/Sectores",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"Sectores"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener puestos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}/api/Puestos",
+							"host": [
+								"{{BaseUrl}}"
+							],
+							"path": [
+								"api",
+								"Puestos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "scope",
+				"value": "openid api://26e5bf9c-9ca7-47c9-bbbc-13f11b4b41ba/AccessAsUser",
+				"type": "string"
+			},
+			{
+				"key": "tokenRequestParams",
+				"value": [
+					{
+						"key": "audience",
+						"value": "api://26e5bf9c-9ca7-47c9-bbbc-13f11b4b41ba/AccessAsUser",
+						"enabled": true,
+						"send_as": "request_body"
+					},
+					{
+						"key": "Origin",
+						"value": "http://localhost",
+						"enabled": true,
+						"send_as": "request_body"
+					}
+				],
+				"type": "any"
+			},
+			{
+				"key": "useBrowser",
+				"value": true,
+				"type": "boolean"
+			},
+			{
+				"key": "client_authentication",
+				"value": "body",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "authorization_code_with_pkce",
+				"type": "string"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "http://localhost:8080/",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "f0c9edd6-3287-4720-9f68-1ee6b9d3f4af",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "AzureAD",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "https://login.microsoftonline.com/9c1dfdd0-7032-44d6-adfe-27ae4e0d2326/oauth2/v2.0/token",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "https://login.microsoftonline.com/9c1dfdd0-7032-44d6-adfe-27ae4e0d2326/oauth2/v2.0/authorize",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BaseUrl",
+			"value": "https://localhost:7164",
+			"type": "string"
+		}
+	]
+}

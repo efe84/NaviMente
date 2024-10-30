@@ -1,0 +1,248 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+trigger:  
+  branches:
+    include:
+      - main
+      - development
+      - release
+  paths:
+    include:
+    - templates/templates/Api/NLayered/NLayered.Template/*
+
+variables:
+- group: 10-GLOBAL
+- template: version-variables-template.yaml
+  # Agent VM image name
+- name: 'vmImageName' 
+  value: 'ubuntu-latest'
+- name: 'appName'
+  value: 'NLayeredApi.1Template'
+- name: 'imageRepositoryNameACR'
+  value: '$(ImagesRepositoryPathACR)/$(appName)'
+- name: 'projectPath' 
+  value: '$(Build.SourcesDirectory)/templates/templates/Api/NLayered/NLayered.Template'
+- name: 'helmPath' 
+  value: '$(projectPath)/deploy/k8s/helm'
+- name: 'version.Revision'  
+  value: $[counter(variables['version.MajorMinor'], 0)]
+- name: 'versionNumber'
+  value: '$(Version.MajorMinor).$(Version.Revision)'
+- name: 'projectName'
+  value: 'NLayeredApi.1Template.WebApi'
+- name: 'projectTestName'
+  value: 'NLayeredApi.1Template.Tests'
+- name: 'projectDatabaseName'
+  value: 'NLayeredApi.1Template.Database'
+- name: 'buildConfiguration'
+  value: 'Release'
+
+
+stages: 
+- stage: Build
+  displayName: 'Build'
+  jobs:
+  - job: 'Build'
+    steps:    
+    - task: UseDotNet@2
+      displayName: 'Install .NET 8 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '8.0.x'
+        performMultiLevelLookup: true    
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'AldabaSonar'
+        organization: 'aldabadev-github'
+        scannerMode: 'MSBuild'
+        projectKey: 'NLayeredApi.1Template'
+        extraProperties: |
+          # Additional properties that will be passed to the scanner, 
+          # Put one key=value per line, example:
+          sonar.exclusions=Database/**, **/SwaggerHelpers.cs
+    - task: NuGetAuthenticate@1
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet build $(buildConfiguration)'
+      inputs:
+        command: build
+        projects: '**/$(projectName).csproj'
+        arguments: --configuration $(buildConfiguration)
+    - task: DotNetCoreCLI@2
+      displayName: Test dotnet
+      inputs:
+        command: test
+        projects: "**/NLayeredApi.1Template.Tests.csproj"
+        arguments: >-
+          --configuration $(BuildConfiguration) 
+
+    - task: SonarCloudAnalyze@1      
+
+- stage: 'Package'
+  displayName: "Package"
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - job: 'PackageApp'
+    displayName: 'Package application'
+    steps:
+
+    - task: NuGetAuthenticate@1
+        
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: |
+          **/$(projectName).csproj 
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration) --self-contained true --runtime win-x64'
+        zipAfterPublish: True
+      
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)/$(buildConfiguration)' 
+        artifactName: 'drop'   
+
+  - job: 'PackageDatabase'
+    displayName: Package database
+    steps:          
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(projectPath)/src/$(projectDatabaseName)/'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/database'
+        Contents: |
+          Migrations/**
+          appsettings.json
+        OverWrite: true
+        flattenFolders: false
+    
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)/database' 
+        artifactName: 'dropdb' 
+
+- stage: Docker
+  displayName: 'Create container'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:  
+  - job: Container
+    displayName: 'Build docker image'
+    steps:
+    - task: Docker@2
+      displayName: Build
+      inputs:
+        containerRegistry: 'acraldaba'
+        repository: '$(imageRepositoryNameACR)'
+        command: 'build'
+        Dockerfile: '$(projectPath)/Dockerfile'
+        tags: |
+          $(Build.BuildNumber)
+          $(Build.BuildNumber)-$(Build.SourceBranchName)
+          latest
+        arguments: '--build-arg FEED_URL=$(AldabaFeedUrl) --build-arg PAT=$(PAT)'
+        
+    - task: Docker@2
+      displayName: Push
+      inputs:
+        containerRegistry: acraldaba
+        repository: '$(imageRepositoryNameACR)'
+        command: 'push'
+        tags: |
+          $(Build.BuildNumber)
+          $(Build.BuildNumber)-$(Build.SourceBranchName)
+          latest
+                    
+    - task: AzureCLI@2
+      displayName: Repository cleanup
+      inputs:
+        azureSubscription: 'Pago por uso-Sponsorship msimal (e6999ee7-0353-45db-877e-2ba5e519d1f0)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az acr manifest list-metadata \
+            --name $(imageRepositoryNameACR) \
+            --registry $(ACRName) \
+            --orderby time_desc \
+            --query "[50:].digest" \
+            -o tsv \
+            | xargs -I% az acr repository delete \
+            --name $(ACRName) \
+            --image $(imageRepositoryNameACR)@% \
+            --yes
+
+- stage: 'Helm'
+  displayName: 'Create Helm Chart'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - job: Helm
+    displayName: 'Helm'
+    steps:  
+    - task: replacetokens@3
+      displayName: 'Replace version and app version values in chart'
+      inputs:
+        rootDirectory: '$(helmPath)/NLayeredApi.1Template'
+        targetFiles: 'Chart.yaml'
+        encoding: 'auto'
+        writeBOM: true
+        actionOnMissing: 'warn'
+        keepToken: false
+        tokenPrefix: '__{'
+        tokenSuffix: '}__'
+        useLegacyPattern: false
+        enableTelemetry: true    
+    - task: AzureCLI@2
+      displayName: 'Login into ACR'
+      inputs:
+        azureSubscription: 'Pago por uso-Sponsorship msimal (e6999ee7-0353-45db-877e-2ba5e519d1f0)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: 'helm registry login $(ACRServiceName) --username $(ACRClientID) --password $(ACRClientSecret)'
+        addSpnToEnvironment: true      
+    - task: Bash@3
+      displayName: 'Push helm chart to ACR'
+      inputs:
+        targetType: 'inline'
+        script: |      
+          helm package ./NLayeredApi.1Template
+          helm push nlayeredapi.1template-$(versionNumber).tgz oci://$(ACRName).azurecr.io/$(HelmRepositoryPathACR)
+        workingDirectory: '$(helmPath)' 
+
+    - task: AzureCLI@2
+      displayName: Repository cleanup
+      inputs:
+        azureSubscription: 'Pago por uso-Sponsorship msimal (e6999ee7-0353-45db-877e-2ba5e519d1f0)'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az acr manifest list-metadata \
+            --name $(HelmRepositoryPathACR)\NLayeredApi.1Template \
+            --registry $(ACRName) \
+            --orderby time_desc \
+            --query "[50:].digest" \
+            -o tsv \
+            | xargs -I% az acr repository delete \
+            --name $(ACRName) \
+            --image $(HelmRepositoryPathACR)\NLayeredApi.1Template@% \
+            --yes
+
+- stage: 'DEV'
+  displayName: 'Deploy to DEV'  
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:   
+    - deployment: Kubernetes
+      environment: KubernetesOnPrem
+    - job: deploy       
+      steps:
+        - task: CmdLine@2
+          displayName: 'ACR login'
+          inputs:
+            script: 'helm registry login acraldaba.azurecr.io --username $(ACRClientId) --password $(ACRClientSecret)'
+     
+        - task: CmdLine@2
+          displayName: 'Helm upgrade'
+          inputs:
+            script: 'helm upgrade nlayeredapi oci://acraldaba.azurecr.io/helm/nlayeredapi.template --version $(versionNumber) -n nlayeredapi'

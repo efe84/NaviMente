@@ -1,5 +1,4 @@
-using System.Security.Claims;
-using System.Text.RegularExpressions;
+﻿using System.Security.Claims;
 
 namespace NaviMente.WebApi.Middlewares
 {
