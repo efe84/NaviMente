@@ -1,0 +1,56 @@
+# Carpetas especificadas
+.template.config/
+.vs/
+.vscode/
+deploy/
+src/NLayeredApi.1Template.Tests/bin/
+src/NLayeredApi.1Template.Tests/obj/
+src/NLayeredApi.1Template.WebApi/bin/
+src/NLayeredApi.1Template.WebApi/obj/
+.dockerignore
+
+# Archivos y carpetas comunes de Visual Studio y .NET
+bin/
+obj/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+*.log
+*.tlog
+*.vspscc
+
+# Paquetes NuGet y entorno
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Configuración de la aplicación
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
+# Archivos de configuración de contenedores y compilación
+Dockerfile
+docker-compose*
+
+# Archivos de compilación y dependencias para proyectos de .NET
+*.dll
+*.exe
+*.pdb
+*.cache
+*.mdb
+*.ilk
+*.lib
+*.obj
+*.tlog
+*.tmp
+
+# Configuración de Rider y JetBrains (opcional)
+.idea/
+*.sln.iml
+_ReSharper*
