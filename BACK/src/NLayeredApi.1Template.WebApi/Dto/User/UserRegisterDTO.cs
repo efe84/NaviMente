@@ -1,4 +1,6 @@
 ﻿
+using NaviMente.WebApi.Dto.Enums;
+
 namespace NaviMente.WebApi.Dto.Login
 {
     public class UserRegisterDTO
@@ -7,5 +9,6 @@ namespace NaviMente.WebApi.Dto.Login
         public string? Email { get; set; }
         public string? Password { get; set; }
         public string? PhoneNumber { get; set; }
+        public long? DeviceId { get; set; }
     }
 }
