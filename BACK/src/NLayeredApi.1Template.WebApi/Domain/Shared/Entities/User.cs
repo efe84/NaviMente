@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
+using NaviMente.WebApi.Dto.Enums;
 
 namespace NaviMente.WebApi.Domain.Shared.Entities
 {
@@ -20,5 +21,11 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
 
         [BsonElement("phone")]
         public string? PhoneNumber { get; set; }
+        
+        [BsonElement("deviceId")]
+        public long? DeviceId { get; set; }
+
+        [BsonElement("role")]
+        public UserRolesEnum Role {  get; set; }
     }
 }

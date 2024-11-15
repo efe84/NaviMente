@@ -8,6 +8,9 @@ using NaviMente.WebApi.Dto.Login;
 using NaviMente.WebApi.Infrastructure.Persistence;
 using NaviMente.WebApi.Domain.Services;
 using Microsoft.EntityFrameworkCore;
+using NaviMente.WebApi.Domain.Shared.Entities;
+using NaviMente.WebApi.Dto.Enums;
+using NaviMente.WebApi.Dto.User;
 
 namespace NaviMente.WebApi.Controllers
 {
@@ -61,7 +64,8 @@ namespace NaviMente.WebApi.Controllers
                 _logger.LogInformation("Login del usuario {userLogin}", userLogin.Username);
                 if (_userService.ValidatePassword(userLogin.Username, userLogin.Password))
                 {
-                    await GenerateCookie(userLogin.Username);
+                    User user = _userService.GetUser(userLogin.Username);
+                    await GenerateCookie(userLogin.Username, user.Role);
                     return Ok();
                 }
                 return Unauthorized(new { message = "invalid credentials" });
@@ -78,11 +82,11 @@ namespace NaviMente.WebApi.Controllers
         /// </summary>
         /// <param name="userName">Nombre de usuario</param>
         /// <returns></returns>
-        private async Task GenerateCookie(string userName)
+        private async Task GenerateCookie(string userName, UserRolesEnum role)
         {
             var claims = new List<Claim>
             {
-                new (ClaimTypes.Role, "Administrator"),
+                new (ClaimTypes.Role, role.ToString()),
                 new (ClaimTypes.NameIdentifier, userName),
             };
 
@@ -98,6 +102,24 @@ namespace NaviMente.WebApi.Controllers
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
         }
-        
+
+
+        [AllowAnonymous]
+        [HttpPost("Edit")]
+        public async Task<IActionResult> Edit([FromBody] UserEditDTO userEdit)
+        {
+            try
+            {
+                _logger.LogInformation("Actualizando el usuario {username}", userEdit.Username);
+                await _userService.EditUser(userEdit);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error actualizando el usuario {userLogin}", userEdit.Username);
+                return BadRequest();
+            }
+        }
+
     }
 }
