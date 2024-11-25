@@ -1,13 +1,14 @@
 # Carpetas especificadas
-.template.config/
+BACK/.template.config/
 .vs/
-.vscode/
-deploy/
-src/NLayeredApi.1Template.Tests/bin/
-src/NLayeredApi.1Template.Tests/obj/
-src/NLayeredApi.1Template.WebApi/bin/
-src/NLayeredApi.1Template.WebApi/obj/
-.dockerignore
+BACK/.vscode/
+BACK/deploy/
+BACK/src/NLayeredApi.1Template.Tests/bin/
+BACK/src/NLayeredApi.1Template.Tests/obj/
+BACK/src/NLayeredApi.1Template.WebApi/bin/
+BACK/src/NLayeredApi.1Template.WebApi/obj/
+BACK/.dockerignore
+FRONT/node_modules
 
 # Archivos y carpetas comunes de Visual Studio y .NET
 bin/
