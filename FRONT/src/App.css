@@ -1,0 +1,55 @@
+#root {
+  font-family: "Montserrat";
+  text-decoration: none;
+  user-select: none;
+  outline: none;
+}
+
+/* Eliminar los estilos de foco predeterminados de los campos de entrada, como los campos de texto y el switch */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  outline: none; /* Elimina el borde azul de enfoque */
+  box-shadow: none; /* Elimina cualquier sombra de enfoque */
+}
+
+/* Si necesitas que el foco de los campos de texto y botones sea completamente invisible: */
+input:focus, textarea:focus, select:focus, button:focus {
+  border: 1px solid #ccc; /* Puedes agregar un borde sutil si prefieres */
+}
+
+/* Para deshabilitar el color azul cuando se hace clic en los botones (enfoque) */
+button:focus, .form-check-input:focus {
+  outline: none; /* Elimina cualquier borde de enfoque */
+  box-shadow: none; /* Elimina la sombra de enfoque */
+}
+
+/* Para eliminar la sombra azul de cualquier componente de formulario al enfocarse */
+.form-control:focus, .form-check-input:focus, .btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+::selection {
+  background-color: transparent; /* Elimina el color de fondo azul */
+  color: inherit; /* Mantiene el color original del texto */
+}
+
+.form-check.form-switch .form-check-input {
+  background-color: #fff;
+  border-color: #000;
+  box-shadow: none !important;
+  outline: none;
+}
+
+.form-check.form-switch .form-check-input:checked {
+  background-color: #000;
+  border-color: #000;
+  outline: none;
+}
+
+.form-check.form-switch .form-check-input:checked::before {
+  background-color: #fff;
+  outline: none;
+}
