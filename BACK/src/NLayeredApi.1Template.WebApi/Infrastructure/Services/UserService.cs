@@ -14,12 +14,11 @@ namespace NaviMente.WebApi.Domain.Services
     public class UserService
     {
         private readonly IMongoCollection<User> _usersCollection;
-        private readonly ILogger<UserController> _logger;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(ApplicationContext dbContext, ILogger<UserController> logger)
+        public UserService(ApplicationContext dbContext)
         {
             _usersCollection = dbContext.Users;
-            _logger = logger;
         }
 
         public async Task CreateUserAsync(UserRegisterDTO userRegister)
