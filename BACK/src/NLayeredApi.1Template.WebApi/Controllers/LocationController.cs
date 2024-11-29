@@ -21,7 +21,7 @@ namespace NaviMente.WebApi.Controllers
         {
             _config = configuration;
             _logger = logger;
-            _locationService = new LocationService(dbContext);
+            _locationService = new LocationService(dbContext, logger);
         }
 
         [AllowAnonymous]
@@ -52,6 +52,23 @@ namespace NaviMente.WebApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en la busqueda de la localización del dispositivo {location}", deviceId);
+                return BadRequest();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("Route")]
+        public IActionResult GetRoute([FromBody] RouteDTO route)
+        {
+            try
+            {
+                LocationLineDTO foundLocation = _locationService.GetRoute(route.DeviceId, route.StartDate, route.EndDate);
+                return Ok(foundLocation);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en la busqueda de la ruta para el dispositivo {location} entre las fechas {fecha1} y {fecha2}",
+                      route.DeviceId, route.StartDate, route.EndDate);
                 return BadRequest();
             }
         }

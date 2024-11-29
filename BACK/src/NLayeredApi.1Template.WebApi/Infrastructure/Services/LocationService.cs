@@ -10,11 +10,12 @@ namespace NaviMente.WebApi.Infrastructure.Services
     public class LocationService
     {
         private readonly IMongoCollection<Location> _locationCollection;
-        private readonly ILogger<LocationService> _logger;
+        private readonly ILogger<LocationController> _logger;
 
-        public LocationService(ApplicationContext dbContext)
+        public LocationService(ApplicationContext dbContext, ILogger<LocationController> logger)
         {
             _locationCollection = dbContext.Locations;
+            _logger = logger;
         }
 
         public LocationPointDTO GetLocation(long deviceId, DateTime timestamp)
@@ -63,6 +64,46 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 _logger.LogError(e,"No se encuentran registros para el naviBand seleccionado");
                 throw;
             }
+        }
+
+        public LocationLineDTO GetRoute(long deviceId, DateTime startDate, DateTime endDate)
+        {
+
+            var filter = Builders<Location>.Filter.And(
+                Builders<Location>.Filter.Eq(l => l.DeviceId, deviceId),
+                Builders<Location>.Filter.Gte(l => l.Timestamp, startDate),
+                Builders<Location>.Filter.Lte(l => l.Timestamp, endDate)
+            );
+
+            var locations = _locationCollection
+                .Find(filter)
+                .SortBy(l => l.Timestamp)
+                .ToList();
+
+            var coordinates = locations
+                .Where(l => l.LocationData is GeoJsonPoint<GeoJson2DCoordinates>)
+                .Select(l =>
+                {
+                    var point = l.LocationData as GeoJsonPoint<GeoJson2DCoordinates>;
+                    if( point != null )
+                        return new List<double> { point.Coordinates.X, point.Coordinates.Y };
+                    else return null;
+                })
+                .ToList();
+
+            var route = new Dto.Location.Route
+            {
+                Type = "LineString",
+                Coordinates = coordinates
+            };
+
+            return new LocationLineDTO
+            {
+                DeviceId = deviceId,
+                StartDate = startDate,
+                EndDate = endDate,
+                Route = route
+            };
         }
     }
 }

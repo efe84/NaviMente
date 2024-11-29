@@ -26,7 +26,7 @@ namespace NaviMente.WebApi.Controllers
         {
             _config = configuration;
             _logger = logger;
-            _userService = new UserService(dbContext);
+            _userService = new UserService(dbContext, logger);
         }
 
         /// <summary>
