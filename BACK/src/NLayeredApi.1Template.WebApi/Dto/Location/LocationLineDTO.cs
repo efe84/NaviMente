@@ -7,7 +7,7 @@ namespace NaviMente.WebApi.Dto.Location
         public long DeviceId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public Route? Route { get; set; }
+        public List<Route>? Routes { get; set; }
     }
 
     public class Route
