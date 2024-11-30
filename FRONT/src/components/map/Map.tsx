@@ -33,9 +33,9 @@ const Map: React.FC = () => {
   };
 
   const bands = [
-    { id: '123456', lastUpdate: '5 mins ago' },
-    { id: '789012', lastUpdate: '10 mins ago' },
-    { id: '345678', lastUpdate: '15 mins ago' },
+    { name: 'Band1', lastUpdate: '5 mins ago' },
+    { name: 'Band2', lastUpdate: '10 mins ago' },
+    { name: 'Band3', lastUpdate: '15 mins ago' },
   ];
 
   return (
@@ -60,7 +60,7 @@ const Map: React.FC = () => {
           <h3 style={{ textAlign: 'center' }}><b>NaviBand Details</b></h3>
           {bands.map((band) => (
             <div
-              key={band.id}
+              key={band.name}
               style={{
                 marginBottom: '15px',
                 padding: '15px',
@@ -70,7 +70,7 @@ const Map: React.FC = () => {
               }}
             >
               <p>
-                <strong>Band ID:</strong> {band.id}
+                <strong>Band:</strong> {band.name}
               </p>
               <p>
                 <strong>Last Update:</strong> {band.lastUpdate}

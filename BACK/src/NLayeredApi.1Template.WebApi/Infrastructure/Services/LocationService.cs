@@ -68,6 +68,9 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
         public LocationLineDTO GetRoute(long deviceId, DateTime startDate, DateTime endDate)
         {
+            const int TimeGapMinutes = 30;
+            var routes = new List<Dto.Location.Route>();
+            var currentCoordinates = new List<List<double>>();
 
             var filter = Builders<Location>.Filter.And(
                 Builders<Location>.Filter.Eq(l => l.DeviceId, deviceId),
@@ -80,29 +83,44 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 .SortBy(l => l.Timestamp)
                 .ToList();
 
-            var coordinates = locations
-                .Where(l => l.LocationData is GeoJsonPoint<GeoJson2DCoordinates>)
-                .Select(l =>
-                {
-                    var point = l.LocationData as GeoJsonPoint<GeoJson2DCoordinates>;
-                    if( point != null )
-                        return new List<double> { point.Coordinates.X, point.Coordinates.Y };
-                    else return null;
-                })
-                .ToList();
+            var previousTimestamp = locations.First().Timestamp;
 
-            var route = new Dto.Location.Route
+            foreach (var location in locations)
             {
-                Type = "LineString",
-                Coordinates = coordinates
-            };
+                if (location.LocationData is GeoJsonPoint<GeoJson2DCoordinates> point)
+                {
+                    var currentTimestamp = location.Timestamp;
+
+                    if ((currentTimestamp - previousTimestamp).TotalMinutes > TimeGapMinutes && currentCoordinates.Any())
+                    {
+                        routes.Add(new Dto.Location.Route
+                        {
+                            Type = "LineString",
+                            Coordinates = new List<List<double>>(currentCoordinates)
+                        });
+                        currentCoordinates.Clear();
+                    }
+
+                    currentCoordinates.Add(new List<double> { point.Coordinates.X, point.Coordinates.Y });
+                    previousTimestamp = currentTimestamp;
+                }
+            }
+
+            if (currentCoordinates.Any())
+            {
+                routes.Add(new Dto.Location.Route
+                {
+                    Type = "LineString",
+                    Coordinates = currentCoordinates
+                });
+            }
 
             return new LocationLineDTO
             {
                 DeviceId = deviceId,
                 StartDate = startDate,
                 EndDate = endDate,
-                Route = route
+                Routes = routes
             };
         }
     }
