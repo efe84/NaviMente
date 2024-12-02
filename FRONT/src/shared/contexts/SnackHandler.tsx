@@ -57,7 +57,7 @@ export default function SnackHandler({ children }: Props) {
         <div
           style={{
             position: 'fixed',
-            top: '20px',
+            top: '90px',
             right: '20px',
             padding: '16px 24px',
             borderRadius: '8px',
