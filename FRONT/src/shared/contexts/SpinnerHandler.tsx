@@ -37,7 +37,19 @@ export default function SpinnerHandler({ children }: Props) {
         <SpinnerContext.Provider value={value}>
             {counter > 0 && 
                 <div style={{ position:'absolute', width:'100%', height: '100%', display:'flex', backgroundColor:'rgba(0,0,0,0.5)', zIndex: 1000 }}>
-                    <div style={{ margin: 'auto', border: '8px solid rgba(255, 255, 255, 0.3)', borderTop: '8px solid white', borderRadius: '50%', width: '50px', height: '50px' }}></div>
+                    <div style={{ margin: 'auto', border: '8px solid rgba(255, 255, 255, 0.3)', borderTop: '8px solid white', borderRadius: '50%', width: '50px', height: '50px', animation: 'spin 1s linear infinite', }}></div>
+                    <style>
+                        {`
+                            @keyframes spin {
+                                0% {
+                                    transform: rotate(0deg);
+                                }
+                                100% {
+                                    transform: rotate(360deg);
+                                }
+                            }
+                        `}
+                    </style>
                 </div>
             }
             {children}
