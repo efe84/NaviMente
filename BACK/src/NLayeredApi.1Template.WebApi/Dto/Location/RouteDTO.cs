@@ -2,7 +2,7 @@
 {
     public class RouteDTO
     {
-        public long DeviceId {  get; set; }
+        public string? SerialNumber {  get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
     }

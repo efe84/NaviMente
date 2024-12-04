@@ -18,17 +18,17 @@ namespace NaviMente.WebApi.Infrastructure.Services
             _logger = logger;
         }
 
-        public LocationPointDTO GetLocation(long deviceId, DateTime timestamp)
+        public LocationPointDTO GetLocation(string serialNumber, DateTime timestamp)
         {
             Location location = _locationCollection
-                                    .Find(l => l.DeviceId == deviceId && l.Timestamp == timestamp)
-                                    .FirstOrDefault() ?? throw new Exception($"Location not found {deviceId}");
+                                    .Find(l => l.SerialNumber == serialNumber && l.Timestamp == timestamp)
+                                    .FirstOrDefault() ?? throw new Exception($"Location not found for NaviBand {serialNumber}");
 
             if (location.LocationData is GeoJsonPoint<GeoJson2DCoordinates> point)
             {
                 return new LocationPointDTO
                 {
-                    DeviceId = location.DeviceId,
+                    SerialNumber = location.SerialNumber,
                     Timestamp = location.Timestamp,
                     Longitude = point.Coordinates.X,
                     Latitude = point.Coordinates.Y
@@ -37,20 +37,20 @@ namespace NaviMente.WebApi.Infrastructure.Services
             throw new Exception("Tipo de location no correspondiente a Point");
         }
 
-        public LocationPointDTO GetLastLocation(long deviceId)
+        public LocationPointDTO GetLastLocation(string serialNumber)
         {
             try
             {
                 Location location = _locationCollection
-                                    .Find(l => l.DeviceId == deviceId)
+                                    .Find(l => l.SerialNumber == serialNumber)
                                     .SortByDescending(l => l.Timestamp)
-                                    .FirstOrDefault() ?? throw new Exception($"Location not found {deviceId}");
+                                    .FirstOrDefault() ?? throw new Exception($"Location not found for NaviBand {serialNumber}");
 
                 if (location.LocationData is GeoJsonPoint<GeoJson2DCoordinates> point)
                 {
                     return new LocationPointDTO
                     {
-                        DeviceId = location.DeviceId,
+                        SerialNumber = location.SerialNumber,
                         Timestamp = location.Timestamp,
                         Longitude = point.Coordinates.X,
                         Latitude = point.Coordinates.Y
@@ -66,14 +66,14 @@ namespace NaviMente.WebApi.Infrastructure.Services
             }
         }
 
-        public LocationLineDTO GetRoute(long deviceId, DateTime startDate, DateTime endDate)
+        public LocationLineDTO GetRoute(string serialNumber, DateTime startDate, DateTime endDate)
         {
             const int TimeGapMinutes = 30;
             var routes = new List<Dto.Location.Route>();
             var currentCoordinates = new List<List<double>>();
 
             var filter = Builders<Location>.Filter.And(
-                Builders<Location>.Filter.Eq(l => l.DeviceId, deviceId),
+                Builders<Location>.Filter.Eq(l => l.SerialNumber, serialNumber),
                 Builders<Location>.Filter.Gte(l => l.Timestamp, startDate),
                 Builders<Location>.Filter.Lte(l => l.Timestamp, endDate)
             );
@@ -117,7 +117,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
             return new LocationLineDTO
             {
-                DeviceId = deviceId,
+                SerialNumber = serialNumber,
                 StartDate = startDate,
                 EndDate = endDate,
                 Routes = routes

@@ -9,8 +9,8 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
         [BsonId]
         public ObjectId Id { get; set; }
 
-        [BsonElement("deviceId")]
-        public long? DeviceId { get; set; }
+        [BsonElement("serialNumber")]
+        public string? SerialNumber { get; set; }
 
         [BsonElement("location")]
         public GeoJsonGeometry<GeoJson2DCoordinates>? LocationData { get; set; }
