@@ -2,7 +2,7 @@
 {
     public class LocationDTO
     {
-        public long DeviceId {  get; set; }
+        public string? SerialNumber {  get; set; }
         public DateTime TimeStamp { get; set; }
     }
 }

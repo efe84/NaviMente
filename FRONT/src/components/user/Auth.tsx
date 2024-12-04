@@ -13,7 +13,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [deviceId, setDeviceId] = useState('');
+    const [serialNumber, setSerialNumber] = useState('');
 
     const onChangeField = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -27,8 +27,8 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
 
         } else if (name === "phoneNumber") {
             setPhoneNumber(value);
-        } else if (name === "deviceId") {
-            setDeviceId(value);
+        } else if (name === "serialNumber") {
+            setSerialNumber(value);
         }
     };
 
@@ -41,7 +41,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                 navigate('/');
             });
         } else {
-            callApi(Register(username, password, email, phoneNumber, deviceId)).then(() => {
+            callApi(Register(username, password, email, phoneNumber, serialNumber)).then(() => {
                 window.localStorage.setItem('userName', username);
                 navigate('/');
             });
@@ -87,7 +87,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                             htmlFor="username"
                             style={{ display: "block", fontSize: "0.9rem", marginBottom: "5px" }}
                         >
-                            Username
+                            Username *
                         </label>
                         <input
                             type="text"
@@ -109,7 +109,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                             htmlFor="password"
                             style={{ display: "block", fontSize: "0.9rem", marginBottom: "5px" }}
                         >
-                            Password
+                            Password *
                         </label>
                         <input
                             type="password"
@@ -134,7 +134,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                                     htmlFor="email"
                                     style={{ display: "block", fontSize: "0.9rem", marginBottom: "5px" }}
                                 >
-                                    Email
+                                    Email *
                                 </label>
                                 <input
                                     type="email"
@@ -156,7 +156,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                                     htmlFor="phoneNumber"
                                     style={{ display: "block", fontSize: "0.9rem", marginBottom: "5px" }}
                                 >
-                                    Phone Number
+                                    Phone Number *
                                 </label>
                                 <input
                                     type="tel"
@@ -174,15 +174,15 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                             </div>
                             <div style={{ marginBottom: "20px" }}>
                                 <label
-                                    htmlFor="deviceId"
+                                    htmlFor="serialNumber"
                                     style={{ display: "block", fontSize: "0.9rem", marginBottom: "5px" }}
                                 >
-                                    Device ID
+                                    [OPT] NaviBand Code
                                 </label>
                                 <input
                                     type="text"
-                                    id="deviceId"
-                                    name="deviceId"
+                                    id="serialNumber"
+                                    name="serialNumber"
                                     style={{
                                         width: "100%",
                                         padding: "10px",

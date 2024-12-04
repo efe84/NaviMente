@@ -6,7 +6,7 @@ namespace NaviMente.WebApi.Dto.Location
 {
     public class LocationPointDTO
     {
-        public long? DeviceId { get; set; }
+        public string? SerialNumber { get; set; }
         public double? Longitude { get; set; }
         public double? Latitude { get; set; }
         public DateTime Timestamp { get; set; }

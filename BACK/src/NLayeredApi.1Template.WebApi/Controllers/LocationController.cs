@@ -30,28 +30,28 @@ namespace NaviMente.WebApi.Controllers
         {
             try
             {
-                LocationPointDTO foundLocation = _locationService.GetLocation(location.DeviceId, location.TimeStamp);
+                LocationPointDTO foundLocation = _locationService.GetLocation(location.SerialNumber, location.TimeStamp);
                 return Ok(foundLocation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en la busqueda de la localización del dispositivo {location}", location.DeviceId);
+                _logger.LogError(ex, "Error en la busqueda de la localización del dispositivo {location}", location.SerialNumber);
                 return BadRequest();
             }
         }
 
         [AllowAnonymous]
         [HttpPost("Last")]
-        public IActionResult GetLastLocation([FromBody] long deviceId)
+        public IActionResult GetLastLocation([FromBody] string serialNumber)
         {
             try
             {
-                LocationPointDTO foundLocation = _locationService.GetLastLocation(deviceId);
+                LocationPointDTO foundLocation = _locationService.GetLastLocation(serialNumber);
                 return Ok(foundLocation);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en la busqueda de la localización del dispositivo {location}", deviceId);
+                _logger.LogError(ex, "Error en la busqueda de la localización del NaviBand {location}", serialNumber);
                 return BadRequest();
             }
         }
@@ -62,13 +62,13 @@ namespace NaviMente.WebApi.Controllers
         {
             try
             {
-                LocationLineDTO foundLocation = _locationService.GetRoute(route.DeviceId, route.StartDate, route.EndDate);
+                LocationLineDTO foundLocation = _locationService.GetRoute(route.SerialNumber, route.StartDate, route.EndDate);
                 return Ok(foundLocation);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error en la busqueda de la ruta para el dispositivo {location} entre las fechas {fecha1} y {fecha2}",
-                      route.DeviceId, route.StartDate, route.EndDate);
+                      route.SerialNumber, route.StartDate, route.EndDate);
                 return BadRequest();
             }
         }

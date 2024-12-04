@@ -34,8 +34,7 @@ namespace NaviMente.WebApi.Domain.Services
                 Username = userRegister.Username,
                 Email = userRegister.Email,
                 Password = hashedPassword,
-                PhoneNumber = userRegister.PhoneNumber,
-                DeviceId = userRegister.DeviceId,
+                MainPhone = userRegister.MainPhone,
                 Role = Dto.Enums.UserRolesEnum.Default
             };
 
@@ -88,8 +87,8 @@ namespace NaviMente.WebApi.Domain.Services
                 { "Username", userEdit.Username },
                 { "Email", userEdit.Email },
                 { "Password", hashedPassword },
-                { "PhoneNumber", userEdit.PhoneNumber },
-                { "DeviceId", userEdit.DeviceId }
+                { "MainPhone", userEdit.MainPhone },
+                { "OtherPhones", userEdit.OtherPhones }
             };
 
             var updateDefinitionBuilder = Builders<User>.Update;
