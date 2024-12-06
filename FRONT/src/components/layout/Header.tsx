@@ -43,6 +43,7 @@ export default function Header({navigateTo}) {
         </button>
 
         <button
+        onClick={() => navigateTo("Binnacle")}
           className="btn btn-link text-white ml-100"
           style={{ textDecoration: 'none', marginRight: '10px' }}
         >
