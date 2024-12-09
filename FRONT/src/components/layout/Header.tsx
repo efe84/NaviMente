@@ -46,7 +46,7 @@ export default function Header({navigateTo}) {
           className="btn btn-link text-white ml-100"
           style={{ textDecoration: 'none', marginRight: '10px' }}
         >
-          <p className="m-0 text-dark">Chat</p>
+          <p className="m-0 text-dark">Binnacle</p>
         </button>
 
 

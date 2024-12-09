@@ -8,7 +8,7 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? UserId { get; set; }
+        public ObjectId? UserId { get; set; }
 
         [BsonElement("username")]
         public string? Username { get; set; }
@@ -19,11 +19,11 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
         [BsonElement("password")]
         public string? Password { get; set; }
 
-        [BsonElement("phone")]
-        public string? PhoneNumber { get; set; }
+        [BsonElement("mainPhone")]
+        public string? MainPhone { get; set; }
         
-        [BsonElement("deviceId")]
-        public long? DeviceId { get; set; }
+        [BsonElement("otherPhones")]
+        public List<string>? OtherPhones { get; set; }
 
         [BsonElement("role")]
         public UserRolesEnum Role {  get; set; }

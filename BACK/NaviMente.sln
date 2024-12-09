@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7369914C-B9BF-4AC0-965E-36771D25B1B8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AC67D597-8A88-422E-A5BE-FF70C2736491}"
+	ProjectSection(SolutionItems) = preProject
+		src\NLayeredApi.1Template.WebApi\SwaggerHelpers.cs = src\NLayeredApi.1Template.WebApi\SwaggerHelpers.cs
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaviMente.Tests", "src\NLayeredApi.1Template.Tests\NaviMente.Tests.csproj", "{975DC126-044D-4879-A523-B42D216F8C3A}"
 EndProject

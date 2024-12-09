@@ -35,7 +35,7 @@ export default function Home() {
 
         <div className="d-flex justify-content-center mb-5">
 
-          <div className="card mx-3 p-2" style={{ width: "400px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
+          <div className="card mx-3 p-2" style={{ width: "400px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", cursor: 'pointer' }} onClick={ () => navigate("/Map") }>
             <div className="card-body text-center">
               <img src={mapIcon} alt="Map Icon" style={{ width: "40px", height: "40px" }} />
               <h5 className="card-title">
@@ -48,15 +48,15 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="card mx-3 p-2" style={{ width: "400px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)" }}>
+          <div className="card mx-3 p-2" style={{ width: "400px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", cursor: 'pointer' }} onClick={ () => navigate("/Chat") }>
             <div className="card-body text-center">
               <img src={chatIcon} alt="Chat Icon" style={{ width: "40px", height: "40px" }} />
               <h5 className="card-title">
                 <br />
-                Chat With Telegram Bot
+                Check last moves / Telegram Bot
               </h5>
               <p className="card-text text-muted">
-                Communicate with a chatbot in real-time to get information about a device conected to your account.
+                Check the last information about your devices. You can also try our new Telegram Bot to ask any doubt.
               </p>
             </div>
           </div>
