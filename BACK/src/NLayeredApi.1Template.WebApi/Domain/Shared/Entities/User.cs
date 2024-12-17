@@ -8,7 +8,10 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public ObjectId? UserId { get; set; }
+        public ObjectId? Id { get; set; }
+
+        [BsonElement("userId")]
+        public long? UserId { get; set; }
 
         [BsonElement("username")]
         public string? Username { get; set; }

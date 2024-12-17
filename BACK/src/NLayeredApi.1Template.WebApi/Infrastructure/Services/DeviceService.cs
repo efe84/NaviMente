@@ -15,12 +15,14 @@ namespace NaviMente.WebApi.Infrastructure.Services
     {
         private readonly IMongoCollection<Device> _devicesCollection;
         private readonly IMongoCollection<Location> _locationsCollection;
+        private readonly IMongoCollection<User> _usersCollection;
         private readonly ILogger<DeviceController> _logger; 
 
         public DeviceService(ApplicationContext dbContext, ILogger<DeviceController> logger)
         {
             _locationsCollection = dbContext.Locations;
             _devicesCollection = dbContext.Devices;
+            _usersCollection = dbContext.Users;
             _logger = logger;
         }
 
@@ -58,12 +60,17 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 throw new Exception("Failed to update the device. Please try again.");
         }
 
-        public async Task<List<DeviceDTO>> GetUserDevicesAsync(long userId)
+        public async Task<List<DeviceDTO>> GetUserDevicesAsync(string username)
         {
-            var filter = Builders<Device>.Filter.Eq(d => d.UserId, userId);
+            var user = await _usersCollection
+                .Find(u => u.Username == username)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new Exception($"User with username '{username}' not found.");
 
             var devices = await _devicesCollection
-                .Find(filter)
+                .Find(d => d.UserId == user.UserId)
                 .ToListAsync();
 
             List<DeviceDTO> devicesList = new List<DeviceDTO>();

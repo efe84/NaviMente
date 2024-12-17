@@ -51,16 +51,16 @@ namespace NaviMente.WebApi.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("List")]
-        public async Task<IActionResult> GetUserDevices([FromBody] long userId)
+        public async Task<IActionResult> GetUserDevices([FromBody] string userName)
         {
             try
             {
-                var devices = await _deviceService.GetUserDevicesAsync(userId);
+                var devices = await _deviceService.GetUserDevicesAsync(userName);
                 return Ok(devices);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en la obtencion de NaviBands para el usuario {userId}", userId);
+                _logger.LogError(ex, "Error en la obtencion de NaviBands para el usuario {userName}", userName);
                 return BadRequest();
             }
         }

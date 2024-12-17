@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GoogleMap, LoadScript, Marker, useLoadScript } from '@react-google-maps/api';
 import Footer from '../layout/Footer';
+import { useApi } from '../../shared/hooks/useApi';
+import { List } from '../../api/deviceApi';
 
 const center = {
   lat: -34.397,
@@ -8,8 +10,19 @@ const center = {
 };
 
 const Map: React.FC = () => {
+  const callApi = useApi();
   const apiKey = 'AIzaSyCXyVi8y7BTQSkqD3oKi8Jt3C97m1wZB8g';
   const [markers, setMarkers] = useState<{ lat: number; lng: number }[]>([center]);
+  const [devices, setDevices] = useState<{ deviceName: string; lastUpdate: string }[]>([]);
+  const userName = localStorage.getItem('userName');
+
+  useEffect(() => {
+    if (userName) {
+      callApi(List(userName)).then((response: any) => {
+        setDevices(response);
+      });
+    }
+  }, [userName]);
 
   const containerStyle = {
     width: '100%',
@@ -21,12 +34,17 @@ const Map: React.FC = () => {
     height: '100%',
   };
 
-  const menuStyle = {
-    width: '20%',
-    padding: '20px',
-    backgroundColor: '#f9f9f9',
-    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
-  };
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+  }
 
   const addMarker = (lat: number, lng: number) => {
     setMarkers([...markers, { lat, lng }]);
@@ -44,12 +62,6 @@ const Map: React.FC = () => {
   if (!isLoaded) {
     return <div>Loading...</div>;
   }
-
-  const bands = [
-    { name: 'Band1', lastUpdate: '5 mins ago' },
-    { name: 'Band2', lastUpdate: '10 mins ago' },
-    { name: 'Band3', lastUpdate: '15 mins ago' },
-  ];
 
   return (
     <>
@@ -69,9 +81,9 @@ const Map: React.FC = () => {
           boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
         }}>
           <h3 style={{ textAlign: 'center' }}><b>NaviBand Details</b></h3>
-          {bands.map((band) => (
+          {devices.map((band) => (
             <div
-              key={band.name}
+              key={band.deviceName}
               style={{
                 marginBottom: '15px',
                 padding: '15px',
@@ -81,10 +93,10 @@ const Map: React.FC = () => {
               }}
             >
               <p>
-                <strong>Band:</strong> {band.name}
+                <strong>Band:</strong> {band.deviceName}
               </p>
               <p>
-                <strong>Last Update:</strong> {band.lastUpdate}
+                <strong>Last Update:</strong> {band.lastUpdate ? formatDate(band.lastUpdate) : "Not used"}
               </p>
               <button
                 style={{
