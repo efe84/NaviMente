@@ -54,7 +54,7 @@ export default function Header({navigateTo}) {
 
         {username == null ? (
           <button
-            onClick={() => navigateTo('/login')}
+            onClick={() => navigateTo('Login')}
             className="btn btn-link text-white"
             style={{ textDecoration: 'none', marginRight: '10px' }}
             aria-label="login"
@@ -63,6 +63,7 @@ export default function Header({navigateTo}) {
           </button>
         ) : (<>
           <button
+            onClick={() => navigateTo('Profile')}
             className="btn btn-link text-white ml-100"
             style={{ textDecoration: 'none', marginRight: '10px' }}
           >
