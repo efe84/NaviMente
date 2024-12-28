@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import Footer from '../layout/Footer';
+import image from '../../assets/user.png';
+import add from '../../assets/add.png';
+import linked from '../../assets/linked.png'
 
 export default function Profile() {
     const [user, setUser] = useState({
-        name: 'John Doe',
-        email: 'johndoe@example.com',
-        mainPhone: '+1234567890',
-        additionalPhones: ['+1987654321', '+1123456789'],
-        devices: ['Device1', 'Device2', 'Device3'],
+        name: 'David Fernandez',
+        email: 'd.fernandez4@udc.es',
+        mainPhone: '685528877',
+        additionalPhones: ['630549122', '679708148'],
+        devices: ['David Band', 'Martin Band'],
         telegramLinked: false,
     });
-
     const [selectedDevice, setSelectedDevice] = useState(user.devices[0]);
+    const [showAddPhone, setShowAddPhone] = useState(false);
+    const [newPhone, setNewPhone] = useState('');
+    const [showAddDevice, setShowAddDevice] = useState(false);
+    const [newDevice, setNewDevice] = useState('');
 
     const addAdditionalPhone = () => {
         const newPhone = prompt('Enter a new phone number:');
@@ -41,66 +47,164 @@ export default function Profile() {
     };
 
     return (
-        <div style={styles.container}>
-            {/* Header Section */}
-            <div style={styles.header}>
-                <div style={styles.profilePicture}>
-                    <span style={styles.profileIcon}>📸</span>
+        <div style={{ width: '100vw', fontFamily: 'Arial, sans-serif', color: '#333', backgroundColor: '#fafafa', padding: '20px 0' }}>
+            <div style={{ display: 'flex', marginLeft: '50px', paddingTop: '20px', alignItems: 'center', marginBottom: '20px' }}>
+                <div style={{ marginRight: '20px' }}>
+                    <img src={image} style={{ height: "90px" }} />
                 </div>
                 <div>
-                    <h1 style={styles.username}>{user.name}</h1>
-                    <p style={styles.profileTitle}>User's Profile</p>
+                    <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', }}>{user.name}</h1>
+                    <p style={{ margin: 0, fontSize: '16px', color: '#777', }}>User's Profile</p>
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div style={styles.mainContent}>
-                {/* Left Column */}
-                <div style={styles.column}>
-                    {/* User Information Section */}
-                    <div style={styles.card}>
+            <div style={{ display: 'flex', flexDirection: 'row', margin: '0 50px' }}>
+                <div style={{ flex: 1, marginRight: '20px' }}>
+                    <div style={{ marginBottom: '20px', padding: '20px' }}>
                         <h3>User Information</h3>
-                        <div style={styles.infoRow}>
-                            <strong>Email:</strong>
+                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
+                            <strong>Email: </strong>
                             <span>{user.email}</span>
                         </div>
-                        <div style={styles.infoRow}>
-                            <strong>Main Phone:</strong>
+                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
+                            <strong>Main Phone: </strong>
                             <span>{user.mainPhone}</span>
                         </div>
-                        <div style={styles.infoRow}>
-                            <strong>Additional Phones:</strong>
-                            <ul style={styles.list}>
+                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
+                            <strong>Additional Phones: </strong>
+                            <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
                                 {user.additionalPhones.map((phone, index) => (
-                                    <li key={index}>{phone}</li>
+                                    <li key={index}> - {phone}</li>
                                 ))}
                             </ul>
-                            <button style={styles.addButton} onClick={addAdditionalPhone}>
-                                Add Phone
-                            </button>
+                            <div style={{ marginTop: "5px" }}>
+                                <img
+                                    src={add}
+                                    alt="Add Phone"
+                                    style={{ width: '32px', height: '32px', cursor: 'pointer' }}
+                                    onClick={() => setShowAddPhone(!showAddPhone)}
+                                />
+                                {showAddPhone && (
+                                    <input
+                                        type="text"
+                                        placeholder="Enter new phone"
+                                        value={newPhone}
+                                        onChange={(e) => setNewPhone(e.target.value)}
+                                        style={{
+                                            marginLeft: '10px',
+                                            padding: '10px',
+                                            fontSize: '14px',
+                                            border: '1px solid #ddd',
+                                            borderRadius: '8px',
+                                            width: '200px',
+                                            outline: 'none',
+                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                        }}
+                                    />
+                                )}
+                                {showAddPhone && (
+                                    <button
+                                        onClick={() => {
+                                            if (newPhone.trim()) {
+                                                setUser((prevState) => ({
+                                                    ...prevState,
+                                                    additionalPhones: [...prevState.additionalPhones, newPhone],
+                                                }));
+                                                setNewPhone('');
+                                                setShowAddPhone(false);
+                                            }
+                                        }}
+                                        style={{
+                                            marginLeft: '10px',
+                                            padding: '10px 15px',
+                                            fontSize: '14px',
+                                            backgroundColor: '#DFDFDF',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                        }}
+                                    >
+                                        Add
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                        <div style={styles.infoRow}>
+                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                             <strong>Devices:</strong>
-                            <ul style={styles.list}>
+                            <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
                                 {user.devices.map((device, index) => (
-                                    <li key={index}>{device}</li>
+                                    <li key={index}> - {device}</li>
                                 ))}
                             </ul>
-                            <button style={styles.addButton} onClick={addDevice}>
-                                Add Device
-                            </button>
+                            <div style={{ marginTop: "5px" }}>
+                                <img
+                                    src={add}
+                                    alt="Add Device"
+                                    style={{ width: '32px', height: '32px', cursor: 'pointer' }}
+                                    onClick={() => setShowAddDevice(!showAddDevice)}
+                                />
+                                {showAddDevice && (
+                                    <input
+                                        type="text"
+                                        placeholder="Enter new device"
+                                        value={newDevice}
+                                        onChange={(e) => setNewDevice(e.target.value)}
+                                        style={{
+                                            marginLeft: '10px',
+                                            padding: '10px',
+                                            fontSize: '14px',
+                                            border: '1px solid #ddd',
+                                            borderRadius: '8px',
+                                            width: '200px',
+                                            outline: 'none',
+                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                        }}
+                                    />
+                                )}
+                                {showAddDevice && (
+                                    <button
+                                        onClick={() => {
+                                            if (newDevice.trim()) {
+                                                setUser((prevState) => ({
+                                                    ...prevState,
+                                                    devices: [...prevState.devices, newDevice],
+                                                }));
+                                                setNewDevice('');
+                                                setShowAddDevice(false);
+                                            }
+                                        }}
+                                        style={{
+                                            marginLeft: '10px',
+                                            padding: '10px 15px',
+                                            fontSize: '14px',
+                                            backgroundColor: '#DFDFDF',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                        }}
+                                    >
+                                        Add
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column */}
-                <div style={styles.column}>
-                    {/* Select a Device Section */}
-                    <div style={styles.card}>
+                <div style={{ flex: 1, marginRight: '20px' }}>
+                    <div style={{ marginBottom: '20px', padding: '20px' }}>
                         <h3>Unlink a Device</h3>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
                             <select
-                                style={styles.select}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    fontSize: '16px',
+                                    borderRadius: '5px',
+                                    border: '1px solid #ddd'
+                                }}
                                 value={selectedDevice}
                                 onChange={(e) => setSelectedDevice(e.target.value)}
                             >
@@ -111,7 +215,6 @@ export default function Profile() {
                                 ))}
                             </select>
                             <button
-                                style={styles.removeButton}
                                 onClick={() => {
                                     if (window.confirm(`Are you sure you want to remove ${selectedDevice}?`)) {
                                         setUser((prevState) => ({
@@ -121,131 +224,46 @@ export default function Profile() {
                                         setSelectedDevice('');
                                     }
                                 }}
+                                style={{
+                                    padding: '10px 15px',
+                                    fontSize: '14px',
+                                    backgroundColor: '#DFDFDF',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                }}
                             >
                                 Remove
                             </button>
                         </div>
                     </div>
-                    {/* Security Settings Section */}
-                    <div style={styles.card}>
+                    <div style={{ marginBottom: '20px', padding: '20px' }}>
                         <h3>Security Settings</h3>
                         <p>Control access to Telegram integration.</p>
                         <button
                             style={{
-                                ...styles.telegramButton,
-                                backgroundColor: user.telegramLinked ? '#28a745' : '#dc3545',
+                                padding: '10px 15px',
+                                fontSize: '16px',
+                                backgroundColor: '#DFDFDF',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                             }}
                             onClick={toggleTelegramLink}
                         >
                             {user.telegramLinked ? 'Unlink Telegram' : 'Link Telegram'}
                         </button>
+                        {user.telegramLinked ?
+                            <img src={linked} style={{height: "30px", marginLeft: "10px"}}/>
+                            :
+                            <></>
+                        }
                     </div>
                 </div>
             </div>
-
             <Footer />
         </div>
     );
-};
-
-const styles = {
-    container: {
-        width: '100vw',
-        fontFamily: 'Arial, sans-serif',
-        color: '#333',
-        backgroundColor: '#fafafa',
-        padding: '20px 0',
-    },
-    header: {
-        display: 'flex',
-        marginLeft: '50px',
-        paddingTop: '20px',
-        alignItems: 'center',
-        marginBottom: '20px',
-    },
-    profilePicture: {
-        width: '80px',
-        height: '80px',
-        borderRadius: '50%',
-        backgroundColor: '#ddd',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: '20px',
-        fontSize: '24px',
-    },
-    profileIcon: {
-        fontSize: '30px',
-    },
-    username: {
-        margin: 0,
-        fontSize: '24px',
-        fontWeight: 'bold',
-    },
-    profileTitle: {
-        margin: 0,
-        fontSize: '16px',
-        color: '#777',
-    },
-    mainContent: {
-        display: 'flex',
-        flexDirection: 'row',
-        margin: '0 50px',
-    },
-    column: {
-        flex: 1,
-        marginRight: '20px',
-    },
-    card: {
-        marginBottom: '20px',
-        padding: '20px',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    },
-    infoRow: {
-        marginBottom: '10px',
-        padding: '10px 0',
-        borderBottom: '1px solid #ddd',
-    },
-    list: {
-        margin: 0,
-        padding: 0,
-        listStyleType: 'none',
-    },
-    addButton: {
-        marginTop: '10px',
-        padding: '8px 12px',
-        backgroundColor: '#007bff',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '15px',
-        cursor: 'pointer',
-    },
-    select: {
-        width: '100%',
-        padding: '10px',
-        fontSize: '16px',
-        borderRadius: '5px',
-        border: '1px solid #ddd',
-    },
-    telegramButton: {
-        width: '100%',
-        padding: '10px',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '15px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-    },
-    removeButton: {
-        padding: '8px 12px',
-        marginRight: '10px',
-        backgroundColor: '#dc3545',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '15px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-    }
 };

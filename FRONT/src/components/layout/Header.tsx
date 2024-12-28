@@ -1,20 +1,15 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import logo from '../../assets/logoNavBar.png';
-import { useApi } from "../../shared/hooks/useApi";
-import { Logout } from "../../api/authApi";
 
 export default function Header({navigateTo}) {
-  const callApi = useApi();
   const username = localStorage.getItem("userName");
 
   const handleLogout = (event: any) => {
     event.preventDefault();
+
     if (username != null) {
-      callApi(Logout(username)).then(() => {
         window.localStorage.removeItem('userName');
         navigateTo('/');
-      });
     }
   };
 
