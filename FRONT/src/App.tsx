@@ -20,7 +20,7 @@ export default function App() {
           <Route path="Register" element={<Auth isLogin={false} />} />
           <Route path="Login" element={<Auth isLogin={true} />} />
           <Route path="Map" element={<Map />} />
-          <Route path="Profile" element={<Profile />} />
+          <Route path="Profile/:username" element={<Profile />} />
           <Route path="Binnacle" element={<Binnacle />} />
         </Route>
       </Routes>

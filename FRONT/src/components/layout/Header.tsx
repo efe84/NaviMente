@@ -58,7 +58,7 @@ export default function Header({navigateTo}) {
           </button>
         ) : (<>
           <button
-            onClick={() => navigateTo('Profile')}
+            onClick={() => navigateTo(`/Profile/${username}`)}
             className="btn btn-link text-white ml-100"
             style={{ textDecoration: 'none', marginRight: '10px' }}
           >

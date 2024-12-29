@@ -1,49 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from "react-router-dom";
 import Footer from '../layout/Footer';
 import image from '../../assets/user.png';
 import add from '../../assets/add.png';
 import linked from '../../assets/linked.png'
+import { useApi } from '../../shared/hooks/useApi';
+import { AddPhone, GetUser } from '../../api/authApi';
+import { GetDevices } from '../../api/deviceApi';
+
+type User = {
+    userId: number;
+    username: string;
+    email: string;
+    mainPhone: string;
+    otherPhones: string[];
+    role: number;
+    telegramLinked: boolean;
+    devices: Device[];
+};
+
+type Device = {
+    deviceName: string;
+    lastUpdate: Date | null;
+}
 
 export default function Profile() {
-    const [user, setUser] = useState({
-        name: 'David Fernandez',
-        email: 'd.fernandez4@udc.es',
-        mainPhone: '685528877',
-        additionalPhones: ['630549122', '679708148'],
-        devices: ['David Band', 'Martin Band'],
-        telegramLinked: false,
-    });
-    const [selectedDevice, setSelectedDevice] = useState(user.devices[0]);
+    const callApi = useApi();
+    const { username } = useParams<string>();
+    const [user, setUser] = useState<User | null>(null);
+    const [selectedDevice, setSelectedDevice] = useState("");
     const [showAddPhone, setShowAddPhone] = useState(false);
-    const [newPhone, setNewPhone] = useState('');
+    const [newPhone, setNewPhone] = useState("");
     const [showAddDevice, setShowAddDevice] = useState(false);
-    const [newDevice, setNewDevice] = useState('');
+    const [newDevice, setNewDevice] = useState("");
+
+    useEffect(() => {
+        if (username != null && username != undefined) {
+            callApi(GetUser(username)).then((result: any) => {
+                const parsedUser: User = {
+                    userId: result.userId,
+                    username: result.username,
+                    email: result.email,
+                    mainPhone: result.mainPhone,
+                    otherPhones: result.otherPhones || [],
+                    role: result.role,
+                    telegramLinked: false, //TODO: CAMBIAR POR EL BOOLEANO DE SI ESTA LINKED
+                    devices: []
+                };
+                setUser(parsedUser);
+                return callApi(GetDevices(result.userId));
+            }).then((devices: any) => {
+                setUser((prevUser) =>
+                    prevUser
+                        ? {
+                            ...prevUser,
+                            devices: devices,
+                        }
+                        : null
+                );
+            })
+        };
+    }, [username]);
 
     const addAdditionalPhone = () => {
-        const newPhone = prompt('Enter a new phone number:');
-        if (newPhone) {
-            setUser((prevState) => ({
-                ...prevState,
-                additionalPhones: [...prevState.additionalPhones, newPhone],
-            }));
+        if(username != null){
+            callApi(AddPhone(username, newPhone)).then((result: any) => {
+                setUser((prevUser) =>
+                    prevUser
+                        ? {
+                              ...prevUser,
+                              otherPhones: result,
+                          }
+                        : null
+                );
+            })
         }
     };
 
     const addDevice = () => {
-        const newDevice = prompt('Enter a new device name:');
-        if (newDevice) {
-            setUser((prevState) => ({
-                ...prevState,
-                devices: [...prevState.devices, newDevice],
-            }));
-        }
+
     };
 
     const toggleTelegramLink = () => {
-        setUser((prevState) => ({
-            ...prevState,
-            telegramLinked: !prevState.telegramLinked,
-        }));
+
     };
 
     return (
@@ -53,7 +92,7 @@ export default function Profile() {
                     <img src={image} style={{ height: "90px" }} />
                 </div>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', }}>{user.name}</h1>
+                    <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', }}>{user?.username}</h1>
                     <p style={{ margin: 0, fontSize: '16px', color: '#777', }}>User's Profile</p>
                 </div>
             </div>
@@ -64,16 +103,16 @@ export default function Profile() {
                         <h3>User Information</h3>
                         <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                             <strong>Email: </strong>
-                            <span>{user.email}</span>
+                            <span>{user?.email}</span>
                         </div>
                         <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                             <strong>Main Phone: </strong>
-                            <span>{user.mainPhone}</span>
+                            <span>{user?.mainPhone}</span>
                         </div>
                         <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                             <strong>Additional Phones: </strong>
                             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
-                                {user.additionalPhones.map((phone, index) => (
+                                {user?.otherPhones.map((phone, index) => (
                                     <li key={index}> - {phone}</li>
                                 ))}
                             </ul>
@@ -106,10 +145,7 @@ export default function Profile() {
                                     <button
                                         onClick={() => {
                                             if (newPhone.trim()) {
-                                                setUser((prevState) => ({
-                                                    ...prevState,
-                                                    additionalPhones: [...prevState.additionalPhones, newPhone],
-                                                }));
+                                                addAdditionalPhone();
                                                 setNewPhone('');
                                                 setShowAddPhone(false);
                                             }
@@ -133,8 +169,8 @@ export default function Profile() {
                         <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                             <strong>Devices:</strong>
                             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
-                                {user.devices.map((device, index) => (
-                                    <li key={index}> - {device}</li>
+                                {user?.devices.map((device, index) => (
+                                    <li key={index}> - {device.deviceName}</li>
                                 ))}
                             </ul>
                             <div style={{ marginTop: "5px" }}>
@@ -166,10 +202,7 @@ export default function Profile() {
                                     <button
                                         onClick={() => {
                                             if (newDevice.trim()) {
-                                                setUser((prevState) => ({
-                                                    ...prevState,
-                                                    devices: [...prevState.devices, newDevice],
-                                                }));
+                                                addDevice();
                                                 setNewDevice('');
                                                 setShowAddDevice(false);
                                             }
@@ -208,19 +241,16 @@ export default function Profile() {
                                 value={selectedDevice}
                                 onChange={(e) => setSelectedDevice(e.target.value)}
                             >
-                                {user.devices.map((device, index) => (
-                                    <option key={index} value={device}>
-                                        {device}
+                                {user?.devices.map((device, index) => (
+                                    <option key={index} value={device.deviceName}>
+                                        {device.deviceName}
                                     </option>
                                 ))}
                             </select>
                             <button
                                 onClick={() => {
                                     if (window.confirm(`Are you sure you want to remove ${selectedDevice}?`)) {
-                                        setUser((prevState) => ({
-                                            ...prevState,
-                                            devices: prevState.devices.filter((device) => device !== selectedDevice),
-                                        }));
+                                        toggleTelegramLink();
                                         setSelectedDevice('');
                                     }
                                 }}
@@ -253,10 +283,10 @@ export default function Profile() {
                             }}
                             onClick={toggleTelegramLink}
                         >
-                            {user.telegramLinked ? 'Unlink Telegram' : 'Link Telegram'}
+                            {user?.telegramLinked ? 'Unlink Telegram' : 'Link Telegram'}
                         </button>
-                        {user.telegramLinked ?
-                            <img src={linked} style={{height: "30px", marginLeft: "10px"}}/>
+                        {user?.telegramLinked ?
+                            <img src={linked} style={{ height: "30px", marginLeft: "10px" }} />
                             :
                             <></>
                         }
