@@ -5,8 +5,8 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
 {
     public class LogEvent
     {
-        [BsonElement("Hour")]
-        public TimeOnly? Hour { get; set; }
+        [BsonElement("Date")]
+        public DateTime? Date { get; set; }
 
         [BsonElement("Severity")]
         public string? Severity { get; set; }
