@@ -1,20 +1,15 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import logo from '../../assets/logoNavBar.png';
-import { useApi } from "../../shared/hooks/useApi";
-import { Logout } from "../../api/authApi";
 
 export default function Header({navigateTo}) {
-  const callApi = useApi();
   const username = localStorage.getItem("userName");
 
   const handleLogout = (event: any) => {
     event.preventDefault();
+
     if (username != null) {
-      callApi(Logout(username)).then(() => {
         window.localStorage.removeItem('userName');
         navigateTo('/');
-      });
     }
   };
 
@@ -54,7 +49,7 @@ export default function Header({navigateTo}) {
 
         {username == null ? (
           <button
-            onClick={() => navigateTo('/login')}
+            onClick={() => navigateTo('Login')}
             className="btn btn-link text-white"
             style={{ textDecoration: 'none', marginRight: '10px' }}
             aria-label="login"
@@ -63,6 +58,7 @@ export default function Header({navigateTo}) {
           </button>
         ) : (<>
           <button
+            onClick={() => navigateTo(`/Profile/${username}`)}
             className="btn btn-link text-white ml-100"
             style={{ textDecoration: 'none', marginRight: '10px' }}
           >

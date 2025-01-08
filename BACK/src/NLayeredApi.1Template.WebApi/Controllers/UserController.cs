@@ -50,6 +50,22 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet()]
+        public async Task<IActionResult> GetUser([FromQuery] string username)
+        {
+            try
+            {
+                User user = await _userService.GetUserInfo(username);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error recuperando la informacion del usuario {userLogin}", username);
+                return BadRequest();
+            }
+        }
+
         /// <summary>
         /// Método Post para el logeo de un usuario ya existente
         /// </summary>
@@ -105,18 +121,52 @@ namespace NaviMente.WebApi.Controllers
 
 
         [AllowAnonymous]
-        [HttpPost("Edit")]
-        public async Task<IActionResult> Edit([FromBody] UserEditDTO userEdit)
+        [HttpPost("EditEmail")]
+        public async Task<IActionResult> EditEmail([FromBody] string newEmail, [FromQuery] string username)
         {
             try
             {
-                _logger.LogInformation("Actualizando el usuario {username}", userEdit.Username);
-                await _userService.EditUser(userEdit);
+                _logger.LogInformation("Actualizando el correo del usuario {userName}", username);
+                await _userService.EditEmail(username, newEmail);
                 return Ok();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error actualizando el usuario {userLogin}", userEdit.Username);
+                _logger.LogError(ex, "Error actualizando el correo del usuario {userLogin}", username);
+                return BadRequest();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("EditMainPhone")]
+        public async Task<IActionResult> EditMainPhone([FromBody] string newMainPhone, [FromQuery] string username)
+        {
+            try
+            {
+                _logger.LogInformation("Actualizando el telefono principal del usuario {userName}", username);
+                await _userService.EditMainPhone(username, newMainPhone);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error actualizando el telefono principal del usuario {userLogin}", username);
+                return BadRequest();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("AddPhone")]
+        public async Task<IActionResult> AddPhone([FromBody] string newPhone, [FromQuery] string username)
+        {
+            try
+            {
+                _logger.LogInformation("Actualizando el telefono principal del usuario {userName}", username);
+                await _userService.AddPhone(username, newPhone);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error actualizando el telefono principal del usuario {userLogin}", username);
                 return BadRequest();
             }
         }

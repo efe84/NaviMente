@@ -41,6 +41,16 @@ namespace NaviMente.WebApi.Domain.Services
             await _usersCollection.InsertOneAsync(newUser);
         }
 
+        public async Task<User> GetUserInfo(string username)
+        {
+            User? user = await _usersCollection.Find(u => u.Username == username).FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new Exception($"User with username {username} not found.");
+
+            return user;
+        }
+
         public bool ValidatePassword(string userName, string password)
         {
             try
@@ -70,49 +80,61 @@ namespace NaviMente.WebApi.Domain.Services
                 Find(u => u.Username == userName).FirstOrDefault() ?? throw new Exception($"User not found {userName}");
         }
 
-        public async Task EditUser(UserEditDTO userEdit)
+        public async Task EditEmail(string username, string newEmail)
         {
-            User? actualUser = _usersCollection.Find(u => u.Username == userEdit.Username).FirstOrDefault();
+            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
             if (actualUser == null)
-                throw new Exception($"User to edit not found {userEdit.Username}");
+                throw new Exception($"User to edit not found {username}");
 
-            string? hashedPassword = null;
-            if (!string.IsNullOrEmpty(userEdit.Password))
-            {
-                hashedPassword = BCrypt.Net.BCrypt.HashPassword(userEdit.Password);
-            }
+            var updateDefinition = Builders<User>.Update.Set(u => u.Email, newEmail);
 
-            var updatesDict = new Dictionary<string, object?>
-            {
-                { "Username", userEdit.Username },
-                { "Email", userEdit.Email },
-                { "Password", hashedPassword },
-                { "MainPhone", userEdit.MainPhone },
-                { "OtherPhones", userEdit.OtherPhones }
-            };
-
-            var updateDefinitionBuilder = Builders<User>.Update;
-            var updates = new List<UpdateDefinition<User>>();
-
-            foreach (var update in updatesDict)
-            {
-                if (update.Value != null && !string.IsNullOrEmpty(update.Value.ToString()))
-                {
-                    updates.Add(updateDefinitionBuilder.Set(update.Key, update.Value));
-                }
-            }
-
-            if (updates.Count == 0)
-                throw new Exception("No fields to update.");
-
-            var updateDefinition = updateDefinitionBuilder.Combine(updates);
-
-            await _usersCollection.UpdateOneAsync(
-                u => u.Username == userEdit.Username,
+            var result = await _usersCollection.UpdateOneAsync(
+                u => u.Username == username,
                 updateDefinition
             );
 
-            _logger.LogInformation("Succesfully edited {username}", userEdit.Username);
+            if (result.MatchedCount == 0)
+                throw new Exception($"Failed to update email for user: {username}");
+
+            _logger.LogInformation("Succesfully edited {username}", username);
+        }
+
+        public async Task EditMainPhone(string username, string newMainPhone)
+        {
+            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
+            if (actualUser == null)
+                throw new Exception($"User to edit not found {username}");
+
+            var updateDefinition = Builders<User>.Update.Set(u => u.MainPhone, newMainPhone);
+
+            var result = await _usersCollection.UpdateOneAsync(
+                u => u.Username == username,
+                updateDefinition
+            );
+
+            if (result.MatchedCount == 0)
+                throw new Exception($"Failed to update email for user: {username}");
+
+            _logger.LogInformation("Succesfully edited {username}", username);
+        }
+
+        public async Task AddPhone(string username, string newPhoneNumber)
+        {
+            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
+            if (actualUser == null)
+                throw new Exception($"User to edit not found: {username}");
+
+            var updateDefinition = Builders<User>.Update.Push(u => u.OtherPhones, newPhoneNumber);
+
+            var result = await _usersCollection.UpdateOneAsync(
+                u => u.Username == username,
+                updateDefinition
+            );
+
+            if (result.MatchedCount == 0)
+                throw new Exception($"Failed to add phone number for user: {username}");
+
+            _logger.LogInformation("Successfully added phone number for {username}", username);
         }
     }
 }
