@@ -16,6 +16,7 @@ namespace NaviMente.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class UserController : ControllerBase
     {
         private readonly IConfiguration _config;
@@ -34,7 +35,6 @@ namespace NaviMente.WebApi.Controllers
         /// </summary>
         /// <param name="userRegister">Username, email, contraseña y numero de telefono</param>
         /// <returns></returns>
-        [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDTO userRegister)
         {
@@ -50,7 +50,6 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpGet()]
         public async Task<IActionResult> GetUser([FromQuery] string username)
         {
@@ -71,7 +70,6 @@ namespace NaviMente.WebApi.Controllers
         /// </summary>
         /// <param name="userLogin">Username y contraseña</param>
         /// <returns></returns>
-        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDTO userLogin)
         {
@@ -120,8 +118,7 @@ namespace NaviMente.WebApi.Controllers
         }
 
 
-        [AllowAnonymous]
-        [HttpPost("EditEmail")]
+        [HttpPut("EditEmail")]
         public async Task<IActionResult> EditEmail([FromBody] string newEmail, [FromQuery] string username)
         {
             try
@@ -137,8 +134,7 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
-        [AllowAnonymous]
-        [HttpPost("EditMainPhone")]
+        [HttpPut("EditMainPhone")]
         public async Task<IActionResult> EditMainPhone([FromBody] string newMainPhone, [FromQuery] string username)
         {
             try
@@ -154,7 +150,6 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost("AddPhone")]
         public async Task<IActionResult> AddPhone([FromBody] string newPhone, [FromQuery] string username)
         {

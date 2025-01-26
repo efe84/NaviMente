@@ -12,15 +12,15 @@ export function GetUser(username: string) {
 };
 
 export function EditEmail(username: string, newEmail: string) {
-    return {url: `/User/EditEmail?username=${username}`, method: ApiMethod.POST, body: newEmail};
+    return {url: `/User/EditEmail?username=${username}`, method: ApiMethod.PUT, body: newEmail};
 };
 
 export function EditMainPhone(username: string, newMainPhone: string) {
-    return {url: `/User/EditMainPhone?username=${username}`, method: ApiMethod.POST, body: newMainPhone};
+    return {url: `/User/EditMainPhone?username=${username}`, method: ApiMethod.PUT, body: newMainPhone};
 };
 
 export function AddPhone(username: string, newPhone: string) {
-    return {url: `/User/AddPhone?username=${username}`, method: ApiMethod.POST, body: newPhone};
+    return {url: `/User/AddPhone?username=${username}`, method: ApiMethod.POST, body: {newPhone}};
 };
 
 export function Logout(username: string) {

@@ -9,6 +9,7 @@ namespace NaviMente.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class DeviceController : ControllerBase
     {
 
@@ -28,7 +29,6 @@ namespace NaviMente.WebApi.Controllers
         /// </summary>
         /// <param name="deviceRegister">Username, email, contraseña y numero de telefono</param>
         /// <returns></returns>
-        [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] DeviceRegisterDTO deviceRegister)
         {
@@ -45,13 +45,12 @@ namespace NaviMente.WebApi.Controllers
         }
 
         /// <summary>
-        /// Método Post para el registro de un nuevo dispositivo
+        /// Método Get para la obtención de dispositivos de un usuario
         /// </summary>
         /// <param name="deviceRegister">Username, email, contraseña y numero de telefono</param>
         /// <returns></returns>
-        [AllowAnonymous]
-        [HttpPost("List")]
-        public async Task<IActionResult> GetUserDevices([FromBody] long userId)
+        [HttpGet("List")]
+        public async Task<IActionResult> GetUserDevices([FromQuery] long userId)
         {
             try
             {
@@ -66,12 +65,11 @@ namespace NaviMente.WebApi.Controllers
         }
 
         /// <summary>
-        /// Método Post para el registro de un nuevo dispositivo
+        /// Método Delete para el registro de un nuevo dispositivo
         /// </summary>
         /// <param name="deviceRegister">Username, email, contraseña y numero de telefono</param>
         /// <returns></returns>
-        [AllowAnonymous]
-        [HttpPost("Unassign")]
+        [HttpDelete("Unassign")]
         public async Task<IActionResult> UnassignDevice([FromBody] DeviceUnassignDTO deviceUnassign)
         {
             try
