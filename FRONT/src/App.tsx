@@ -7,6 +7,8 @@ import Home from './components/home/Home.tsx'
 import Auth from './components/user/auth.tsx';
 import ContextProvider from './shared/contexts/ContextProvider.tsx';
 import Map from './components/map/Map.tsx'
+import Profile from './components/user/Profile.tsx';
+import Binnacle from './components/binnacle/Binnacle.tsx';
 
 export default function App() {
 
@@ -18,6 +20,8 @@ export default function App() {
           <Route path="Register" element={<Auth isLogin={false} />} />
           <Route path="Login" element={<Auth isLogin={true} />} />
           <Route path="Map" element={<Map />} />
+          <Route path="Profile/:username" element={<Profile />} />
+          <Route path="Binnacle" element={<Binnacle />} />
         </Route>
       </Routes>
     </ContextProvider>

@@ -9,6 +9,7 @@ namespace NaviMente.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class LocationController : ControllerBase
     {
         private readonly IConfiguration _config;
@@ -22,7 +23,6 @@ namespace NaviMente.WebApi.Controllers
             _locationService = new LocationService(dbContext, logger);
         }
 
-        [AllowAnonymous]
         [HttpPost()]
         public IActionResult GetLocation([FromBody] LocationDTO location)
         {
@@ -38,7 +38,6 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost("Last")]
         public IActionResult GetLastLocation([FromBody] string serialNumber)
         {
@@ -54,7 +53,6 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost("Route")]
         public IActionResult GetRoute([FromBody] RouteDTO route)
         {
