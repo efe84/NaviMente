@@ -11,7 +11,6 @@ namespace NaviMente.WebApi.Controllers
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class DeviceController : ControllerBase
     {
 
