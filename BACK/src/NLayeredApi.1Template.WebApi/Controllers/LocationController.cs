@@ -38,8 +38,8 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
-        [HttpPost("Last")]
-        public IActionResult GetLastLocation([FromBody] string serialNumber)
+        [HttpGet("Last")]
+        public IActionResult GetLastLocation([FromQuery] string serialNumber)
         {
             try
             {

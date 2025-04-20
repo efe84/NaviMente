@@ -62,14 +62,14 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 throw new Exception("Failed to update the device. Please try again.");
         }
 
-        public async Task<List<DeviceDTO>> GetUserDevicesAsync(string username)
+        public async Task<List<DeviceDTO>> GetUserDevicesAsync(long userId)
         {
             var user = await _usersCollection
-                .Find(u => u.Username == username)
+                .Find(u => u.UserId == userId)
                 .FirstOrDefaultAsync();
 
             if (user == null)
-                throw new Exception($"User with username '{username}' not found.");
+                throw new Exception($"User with userId '{userId}' not found.");
 
             var devices = await _devicesCollection
                 .Find(d => d.UserId == user.UserId)

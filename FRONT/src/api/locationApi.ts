@@ -5,5 +5,5 @@ export function SearchRoute(serialNumber: string, startDate: any, endDate: any) 
 };
 
 export function SearchLastLocation(serialNumber: string) {
-    return {url: '/Location/Last', method: ApiMethod.POST, body: serialNumber};
+    return {url: `/Location/Last?serialNumber=${serialNumber}` , method: ApiMethod.GET};
 };

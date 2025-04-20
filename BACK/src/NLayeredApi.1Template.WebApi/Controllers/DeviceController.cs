@@ -50,17 +50,18 @@ namespace NaviMente.WebApi.Controllers
         /// </summary>
         /// <param name="userName">Nombre del usuario</param>
         /// <returns>Lista de dispositivos</returns>
-        [HttpPost("List")]
-        public async Task<IActionResult> GetUserDevices([FromBody] string userName)
+        [HttpGet("List")]
+        public async Task<IActionResult> GetUserDevices([FromQuery] string userId)
         {
             try
             {
-                var devices = await _deviceService.GetUserDevicesAsync(userName);
+                long.TryParse(userId, out long userIdLong);
+                var devices = await _deviceService.GetUserDevicesAsync(userIdLong);
                 return Ok(devices);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en la obtencion de NaviBands para el usuario {userName}", userName);
+                _logger.LogError(ex, "Error en la obtencion de NaviBands para el usuario {userId}", userId);
                 return BadRequest();
             }
         }
@@ -110,8 +111,8 @@ namespace NaviMente.WebApi.Controllers
         /// </summary>
         /// <param name="serialNumber">Numero de serial del dispositivo</param>
         /// <returns>Lista de zonas bloqueadas para ese dispositivo</returns>
-        [HttpPost("Zones")]
-        public async Task<IActionResult> GetZones([FromBody] string serialNumber)
+        [HttpGet("Zones")]
+        public async Task<IActionResult> GetZones([FromQuery] string serialNumber)
         {
             try
             {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { GoogleMap, useLoadScript, Circle, Rectangle, Polygon, Marker } from '@react-google-maps/api';
 import Footer from '../layout/Footer';
 import { useApi } from '../../shared/hooks/useApi';
-import { BlockZone, List, Zones } from '../../api/deviceApi';
+import { BlockZone, GetDevices, Zones } from '../../api/deviceApi';
 import { SearchLastLocation, SearchRoute } from '../../api/locationApi';
 
 const center = {
@@ -29,12 +29,12 @@ const Map: React.FC = () => {
 
   useEffect(() => {
     if (userName) {
-      callApi(List(userName)).then((response: any) => {
+      callApi(GetDevices("1")).then((response: any) => {
         setDevices(response);
       });
-      callApi(Zones("B2412021V1")).then((response: any) => {
-        setZones(response);
-      });
+      // callApi(Zones("B2412021V1")).then((response: any) => {
+      //   setZones(response);
+      // });
     }
   }, [userName]);
 
