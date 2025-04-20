@@ -2,15 +2,13 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NLayeredApi._1Template.WebApi.Model.Login;
 using System.Security.Claims;
-using NaviMente.WebApi.Dto.Login;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using NaviMente.WebApi.Domain.Services;
 using Microsoft.EntityFrameworkCore;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Enums;
 using NaviMente.WebApi.Dto.User;
+using NaviMente.WebApi.Infrastructure.Services;
 
 namespace NaviMente.WebApi.Controllers
 {

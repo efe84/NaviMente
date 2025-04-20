@@ -1,7 +1,6 @@
-﻿
-using NaviMente.WebApi.Dto.Enums;
+﻿using NaviMente.WebApi.Dto.Enums;
 
-namespace NaviMente.WebApi.Dto.Login
+namespace NaviMente.WebApi.Dto.User
 {
     public class UserRegisterDTO
     {

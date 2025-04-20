@@ -1,4 +1,4 @@
-﻿namespace NLayeredApi._1Template.WebApi.Model.Login
+﻿namespace NaviMente.WebApi.Dto.User
 {
     public struct UserLoginDTO
     {

@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Amqp.Transaction;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
+using MongoDB.Driver.GeoJsonObjectModel;
 using NaviMente.WebApi.Controllers;
-using NaviMente.WebApi.Domain.Services;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Device;
-using NaviMente.WebApi.Dto.Login;
 using NaviMente.WebApi.Infrastructure.Persistence;
 
 namespace NaviMente.WebApi.Infrastructure.Services
@@ -16,6 +16,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
         private readonly IMongoCollection<Device> _devicesCollection;
         private readonly IMongoCollection<Location> _locationsCollection;
         private readonly IMongoCollection<User> _usersCollection;
+        private readonly IMongoCollection<RestrictedZone> _restrictedZonesCollection;
         private readonly ILogger<DeviceController> _logger; 
 
         public DeviceService(ApplicationContext dbContext, ILogger<DeviceController> logger)
@@ -23,6 +24,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
             _locationsCollection = dbContext.Locations;
             _devicesCollection = dbContext.Devices;
             _usersCollection = dbContext.Users;
+            _restrictedZonesCollection = dbContext.Zone;
             _logger = logger;
         }
 
@@ -118,6 +120,62 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
             if (updateResult.ModifiedCount == 0)
                 throw new Exception("Failed to unassign the naviBand. Please try again.");
+        }
+
+        public async Task AddRestrictedZone(ZoneDTO zoneDto)
+        {
+
+            var shapes = new List<GeoJsonPolygon<GeoJson2DGeographicCoordinates>>();
+
+            foreach (var polygon in zoneDto.Shapes)
+            {
+                var coordinates = new List<GeoJson2DGeographicCoordinates>();
+
+                foreach (var coord in polygon.Coordinates[0])
+                {
+                    coordinates.Add(new GeoJson2DGeographicCoordinates(coord[0], coord[1]));
+                }
+
+                var linearRing = new GeoJsonLinearRingCoordinates<GeoJson2DGeographicCoordinates>(coordinates);
+                var polygonCoordinates = new GeoJsonPolygonCoordinates<GeoJson2DGeographicCoordinates>(linearRing);
+                var geoPolygon = new GeoJsonPolygon<GeoJson2DGeographicCoordinates>(polygonCoordinates);
+
+                shapes.Add(geoPolygon);
+            }
+
+            var zone = new RestrictedZone
+            {
+                SerialNumber = zoneDto.SerialNumber,
+                Shapes = shapes,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _restrictedZonesCollection.InsertOneAsync(zone);
+        }
+
+        public async Task<List<ZoneOutputDTO>?> GetRestrictedZones(string serialNumber)
+        {
+
+            var zones = await _restrictedZonesCollection.Find(Builders<RestrictedZone>.Filter.Empty).ToListAsync();
+
+            var zoneDtos = zones.Select(zone => new ZoneOutputDTO
+            {
+                SerialNumber = zone.SerialNumber,
+                Shapes = zone.Shapes.Select(polygon => new ShapeDto
+                {
+                    Type = "Polygon",
+                    Coordinates = new List<List<CoordinateDto>>
+                    {
+                        polygon.Coordinates.Exterior.Positions.Select(coord => new CoordinateDto
+                        {
+                            Latitude = coord.Latitude,
+                            Longitude = coord.Longitude
+                        }).ToList()
+                    }
+                }).ToList()
+            }).ToList();
+
+            return zoneDtos;
         }
 
     }

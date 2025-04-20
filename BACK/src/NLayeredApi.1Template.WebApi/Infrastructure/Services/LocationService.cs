@@ -118,8 +118,6 @@ namespace NaviMente.WebApi.Infrastructure.Services
             return new LocationLineDTO
             {
                 SerialNumber = serialNumber,
-                StartDate = startDate,
-                EndDate = endDate,
                 Routes = routes
             };
         }
