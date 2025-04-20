@@ -1,6 +1,4 @@
-﻿
-
-namespace NLayeredApi._1Template.WebApi.Domain.Shared
+﻿namespace NaviMente.WebApi.Domain.Shared
 {
     public static class DomainErrors
     {

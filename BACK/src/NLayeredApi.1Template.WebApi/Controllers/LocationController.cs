@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NaviMente.WebApi.Domain.Services;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Location;
-using NaviMente.WebApi.Dto.Login;
 using NaviMente.WebApi.Infrastructure.Persistence;
 using NaviMente.WebApi.Infrastructure.Services;
 

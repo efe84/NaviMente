@@ -2,8 +2,8 @@
 using Hellang.Middleware.ProblemDetails;
 using Microsoft.Data.SqlClient;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using NaviMente.WebApi.Domain.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using NaviMente.WebApi.Infrastructure.Services;
 
 namespace NaviMente.WebApi
 {
