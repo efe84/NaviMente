@@ -47,7 +47,6 @@ export default function Home() {
               </p>
             </div>
           </div>
-
           <div className="card mx-3 p-2" style={{ width: "400px", boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", cursor: 'pointer' }} onClick={ () => navigate("/Binnacle") }>
             <div className="card-body text-center">
               <img src={chatIcon} alt="Chat Icon" style={{ width: "40px", height: "40px" }} />

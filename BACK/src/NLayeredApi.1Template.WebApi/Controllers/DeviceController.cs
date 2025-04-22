@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NaviMente.WebApi.Domain.Services;
+using NaviMente.WebApi.Infrastructure.Services;
 using NaviMente.WebApi.Dto.Device;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using NaviMente.WebApi.Infrastructure.Services;
+using MongoDB.Driver.GeoJsonObjectModel;
+using MongoDB.Driver;
 
 namespace NaviMente.WebApi.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class DeviceController : ControllerBase
     {
 
@@ -45,16 +46,17 @@ namespace NaviMente.WebApi.Controllers
         }
 
         /// <summary>
-        /// Método Get para la obtención de dispositivos de un usuario
+        /// Metodo Get para recuperar la lista de dispositivos del usuario
         /// </summary>
-        /// <param name="deviceRegister">Username, email, contraseña y numero de telefono</param>
-        /// <returns></returns>
+        /// <param name="userName">Nombre del usuario</param>
+        /// <returns>Lista de dispositivos</returns>
         [HttpGet("List")]
-        public async Task<IActionResult> GetUserDevices([FromQuery] long userId)
+        public async Task<IActionResult> GetUserDevices([FromQuery] string userId)
         {
             try
             {
-                var devices = await _deviceService.GetUserDevicesAsync(userId);
+                long.TryParse(userId, out long userIdLong);
+                var devices = await _deviceService.GetUserDevicesAsync(userIdLong);
                 return Ok(devices);
             }
             catch (Exception ex)
@@ -82,6 +84,48 @@ namespace NaviMente.WebApi.Controllers
                 _logger.LogError(ex, "Error desenlazando el usuario {user} del NaviBand {deviceName}", deviceUnassign.UserId, deviceUnassign.SerialNumber);
                 return BadRequest();
             }
+        }
+
+        /// <summary>
+        /// Método Post para el registro de una nueva zona bloqueada
+        /// </summary>
+        /// <param name="zoneDto">serial del dispositivo y coordenadas de la zona</param>
+        /// <returns></returns>
+        [HttpPost("BlockZone")]
+        public async Task<IActionResult> RegisterBlockedZone([FromBody] ZoneDTO zoneDto)
+        {
+            try
+            {
+                await _deviceService.AddRestrictedZone(zoneDto);
+                return Ok(new { message = "Zona registrada satisfactoriamente" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error guardando la zona restringida");
+                return BadRequest();
+            }
+        }
+
+        /// <summary>
+        /// Método GET para recuperar las zonas bloqueadas
+        /// </summary>
+        /// <param name="serialNumber">Numero de serial del dispositivo</param>
+        /// <returns>Lista de zonas bloqueadas para ese dispositivo</returns>
+        [HttpGet("Zones")]
+        public async Task<IActionResult> GetZones([FromQuery] string serialNumber)
+        {
+            try
+            {
+                var zones = await _deviceService.GetRestrictedZones(serialNumber);
+                return Ok(zones);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error recuperando las zonas restringidas");
+                return BadRequest();
+            }
+
+            
         }
     }
 }

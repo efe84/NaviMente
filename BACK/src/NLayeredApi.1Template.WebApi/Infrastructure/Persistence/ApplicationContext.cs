@@ -19,6 +19,8 @@ namespace NaviMente.WebApi.Infrastructure.Persistence
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
         public IMongoCollection<Device> Devices => _database.GetCollection<Device>("Devices");
         public IMongoCollection<Location> Locations => _database.GetCollection<Location>("Locations");
+        public IMongoCollection<Counter> Counters => _database.GetCollection<Counter>("Counters");
+        public IMongoCollection<RestrictedZone> Zone => _database.GetCollection<RestrictedZone>("RestrictedZones");
         public IMongoCollection<LogRegister> Logs => _database.GetCollection<LogRegister>("Logs");
     }
 }

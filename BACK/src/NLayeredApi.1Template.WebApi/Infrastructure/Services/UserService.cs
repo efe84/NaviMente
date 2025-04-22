@@ -4,12 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using NaviMente.WebApi.Controllers;
 using NaviMente.WebApi.Domain.Shared.Entities;
-using NaviMente.WebApi.Dto.Login;
 using NaviMente.WebApi.Dto.User;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using NLayeredApi._1Template.WebApi.Model.Login;
 
-namespace NaviMente.WebApi.Domain.Services
+namespace NaviMente.WebApi.Infrastructure.Services
 {
     public class UserService
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace NLayeredApi._1Template.WebApi.Infrastructure.Persistence
+namespace NaviMente.WebApi.Infrastructure.Persistence.Repositories
 {
     //public abstract class Repository<T, Key> : IRepository<T, Key> where T : Entity
     //{
@@ -34,7 +34,7 @@ namespace NLayeredApi._1Template.WebApi.Infrastructure.Persistence
     //        dbSet.Remove(entity);
     //    }
 
-        
+
     //}
 
     //public abstract class Repository<T> : Repository<T, long> where T : Entity
