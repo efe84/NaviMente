@@ -1,88 +1,82 @@
-import React, { useState, useEffect } from "react";
-import botIcon from '../../assets/bot.png';
-import userIcon from '../../assets/user.png';
+import React, { useRef } from "react";
 
 interface ChatLogProps {
-    device: { id: number; name: string } | null;
+    messages: Message[];
 }
 
 interface Message {
-    id: number;
-    text: string;
-    creator: 'user' | 'bot';
-  }
+    timestamp: string;
+    severity: number;
+    message: string;
+}
 
-const ChatLog: React.FC<ChatLogProps> = ({ device }) => {
-    const [messages, setMessages] = React.useState<Message[]>([]);
+const severityLabels: Record<number, { label: string; color: string }> = {
+    1: { label: "[INF]", color: "green" },
+    2: { label: "[WAR]", color: "orange" },
+    3: { label: "[ERR]", color: "red" },
+};
 
-    React.useEffect(() => {
-        if (device) {
-            setMessages([
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-                { id: 1, text: `New connection: ${device.name} connected.`, creator: "bot" },
-            ]);
-        }
-    }, [device]);
+const ChatLog: React.FC<ChatLogProps> = ({ messages }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    const handleSendMessage = (text: string, creator: 'user' | 'bot') => {
-        const newMessage = {
-          id: messages.length + 1,
-          text: text,
-          creator: creator,
-        };
-      
-        setMessages((prevMessages) => [...prevMessages, newMessage]);
-      
-        if (creator === 'user') {
-          setTimeout(() => {
-            handleSendMessage("Hello, how can I assist you?", 'bot');
-          }, 1000);
-        }
-      };
+    const groupMessagesByDate = (messages: Message[]) => {
+        const groups: { [date: string]: Message[] } = {};
+        messages.forEach((msg) => {
+            const [date] = msg.timestamp.split(' ');
+            if (!groups[date]) {
+                groups[date] = [];
+            }
+            groups[date].push(msg);
+        });
+        return groups;
+    };
+
+    const groupedMessages = groupMessagesByDate(messages);
 
     return (
-        <div className="d-flex flex-column" style={{ paddingTop: "5%", paddingLeft: "8%", paddingRight: "8%" }}>
-            <div className="flex-grow-1 px-3 overflow-auto " style={{ height: "70vh", overflowY: "auto" }}>
-                {messages.map((msg) => (
-                    <div key={msg.id} className={`mb-2 d-flex align-items-center ${msg.creator === 'bot' ? 'justify-content-start' : 'justify-content-end'}`}>
-                    {msg.creator === 'bot' ? (
-                      <img
-                        src={botIcon}
-                        alt="Icono de mensaje"
-                        style={{ width: "30px", height: "30px", marginRight: "10px" }}
-                      />
-                    ):(
-                        <img
-                        src={userIcon}
-                        alt="Icono de mensaje"
-                        style={{ width: "30px", height: "30px", marginRight: "10px" }}
-                      />
-                    )}
-                    <div>
-                      {msg.text}
+        <div
+            ref={containerRef}
+            className="d-flex flex-column border-left border-right"
+            style={{
+                paddingTop: "5%",
+                paddingLeft: "8%",
+                paddingRight: "8%",
+                borderLeft: "2px solid black",
+                borderRight: "2px solid black",
+                height: "100%",
+            }}
+        >
+            <div className="flex-grow-1 px-3 overflow-auto" style={{ height: "70vh", overflowY: "auto" }}>
+                {Object.keys(groupedMessages).length === 0 ? (
+                    <div style={{ textAlign: "center", fontWeight: "bold", marginTop: "25px", marginBottom: "10px", color: "gray" }}>
+                        No messages registered yet
                     </div>
-                  </div>
-                ))}
+                ) : (
+                    Object.entries(groupedMessages).map(([date, logs]) => (
+                        <div key={date}>
+                            <div style={{ textAlign: "center", fontWeight: "bold", marginTop: "25px", marginBottom: "10px", color: "gray" }}>
+                                {date}
+                            </div>
+                            {logs.map((msg, index) => {
+                                const [_, time] = msg.timestamp.split(' ');
+                                const severityInfo = severityLabels[msg.severity] || { label: "[UNK]", color: "gray" };
+                                return (
+                                    <div key={index} className="mb-2 d-flex align-items-center">
+                                        <div>
+                                            <span style={{ color: "black", marginRight: "8px" }}>
+                                                {time} -
+                                            </span>
+                                            <span style={{ color: severityInfo.color, marginRight: "8px" }}>
+                                                {severityInfo.label}
+                                            </span>
+                                            {msg.message}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

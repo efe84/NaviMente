@@ -1,37 +1,65 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DeviceList from "./DeviceList";
 import ChatLog from "./ChatLog";
 import QuickActions from "./QuickActions";
 import Footer from "../layout/Footer";
+import { GetLogs } from "../../api/binnacleApi";
+import { useApi } from "../../shared/hooks/useApi";
+import { GetDevices } from "../../api/deviceApi";
 
 const Binnacle: React.FC = () => {
-  const [selectedDevice, setSelectedDevice] = useState<{ id: number; name: string } | null>({id: 1,name: "David Band"}); //Recuperar las bands del usuario y pasar la primera si hay alguna o null si no hay
+  const callApi = useApi();
+  const [devices, setDevices] = useState<{ serialNumber: string; name: string }[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<{ serialNumber: string; name: string } | null>(null);
 
-  const handleDeviceSelect = (device: { id: number; name: string }) => {
+  const fetchLogs = (serialNumber: string, severity?: number | null) => {
+    callApi(GetLogs(serialNumber, severity)).then((response: any) => {
+      setMessages(response);
+    });
+  };
+
+  useEffect(() => {
+    callApi(GetDevices("1")).then((response: any) => {
+      setDevices(response);
+      if (response.length > 0) {
+        setSelectedDevice(response[0]);
+        fetchLogs(response[0].serialNumber);
+      }
+    });
+  }, []);
+
+  const handleDeviceSelect = (device: { serialNumber: string; name: string }) => {
     setSelectedDevice(device);
+    fetchLogs(device.serialNumber);
+  };
+
+  const handleFilter = (severity: number | null) => {
+    if (selectedDevice) {
+      fetchLogs(selectedDevice.serialNumber, severity);
+    }
   };
 
   return (
     <>
-    <div style={{ backgroundColor: "#fafafa", height: "calc(100vh - 150px)", display:"flex" }}>
-      {/* Lista de dispositivos */}
-      <div className="col-2 p-0">
-        <DeviceList onSelectDevice={handleDeviceSelect} />
-      </div>
+      <div style={{ backgroundColor: "#fafafa", height: "calc(100vh - 150px)", display: "flex" }}>
 
-      {/* Chat log central */}
-      <div className="col-8 p-0">
-        <ChatLog device={selectedDevice} />
-      </div>
+        <div className="col-2 p-0">
+          <DeviceList devices={devices} onSelectDevice={handleDeviceSelect} selectedDevice={selectedDevice} />
+        </div>
 
-      {/* Acciones rápidas */}
-      <div className="col-2 p-0">
-        <QuickActions device={selectedDevice} />
+        <div className="col-8 p-0">
+          <ChatLog messages={messages} />
+        </div>
+
+        <div className="col-2 p-0">
+          <QuickActions onFilter={handleFilter} />
+        </div>
+
       </div>
-    </div>
-    <div>
-        <Footer/>
-    </div>
+      <div>
+        <Footer />
+      </div>
     </>
   );
 };

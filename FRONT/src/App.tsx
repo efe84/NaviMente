@@ -16,7 +16,7 @@ export default function App() {
     <ContextProvider>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route path="" element={<Home />} />
+          <Route path="Home" element={<Home />} />
           <Route path="Register" element={<Auth isLogin={false} />} />
           <Route path="Login" element={<Auth isLogin={true} />} />
           <Route path="Map" element={<Map />} />

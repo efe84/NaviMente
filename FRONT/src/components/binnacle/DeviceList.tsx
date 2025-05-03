@@ -1,40 +1,35 @@
 import React from "react";
 
 interface DeviceListProps {
-    onSelectDevice: (device: { id: number; name: string }) => void;
-  }
+  devices: { serialNumber: string; name: string }[];
+  onSelectDevice: (device: { serialNumber: string; name: string }) => void;
+  selectedDevice: { serialNumber: string; name: string } | null;
+}
   
-  const DeviceList: React.FC<DeviceListProps> = ({ onSelectDevice }) => {
-    const devices = [
-      { id: 1, name: "David Band" },
-      { id: 2, name: "Martin Band" },
-    ];
-  
+  const DeviceList: React.FC<DeviceListProps> = ({ devices, onSelectDevice, selectedDevice }) => {
     return (
       <div>
-        <h5 style={{ paddingTop:"12%", paddingLeft: "10%" }}><b>Devices</b></h5>
-        <ul className="list-unstyled py-2" style={{ paddingLeft: "10%" }}>
+        <h5 className="px-3" style={{ paddingTop:"12%" }}><b>Devices</b></h5>
+        <div className="d-flex flex-column gap-2 px-3 pt-2">
           {devices.map((device) => (
-            <li
-              key={device.id}
-              onClick={() => onSelectDevice(device)}
+            <button
+              key={device.serialNumber}
+              className="btn"
               style={{
-                padding: "10px",
-                cursor: "pointer",
-                borderRadius: "5px",
+                textAlign: "left",
+                padding: "10px 15px",
+                border: "none",
+                boxShadow: "none",
+                backgroundColor: selectedDevice?.serialNumber === device.serialNumber ? "#E8E8E8" : "transparent",
                 transition: "background-color 0.2s",
+                cursor: "pointer",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#E8E8E8")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
+              onClick={() => onSelectDevice(device)}
             >
               {device.name}
-            </li>
+            </button>
           ))}
-        </ul>
+        </div>
       </div>
     );
   };

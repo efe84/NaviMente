@@ -28,11 +28,11 @@ namespace NaviMente.WebApi.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("{serialNumber}")]
-        public async Task<IActionResult> GetDeviceLogs(string serialNumber)
+        public async Task<IActionResult> GetDeviceLogs(string serialNumber, [FromQuery] int? severity)
         {
             try
             {
-                var logs = await _binnacleService.GetDeviceLogsAsync(serialNumber);
+                var logs = await _binnacleService.GetDeviceLogsAsync(serialNumber, severity);
                 return Ok(logs);
             }
             catch (Exception ex)

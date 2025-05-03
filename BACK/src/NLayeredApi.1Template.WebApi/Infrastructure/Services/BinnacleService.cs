@@ -1,18 +1,14 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using NaviMente.WebApi.Controllers;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Binnacle;
-using NaviMente.WebApi.Dto.Device;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using Serilog.Events;
-using LogEvent = NaviMente.WebApi.Domain.Shared.Entities.LogEvent;
 
 namespace NaviMente.WebApi.Infrastructure.Services
 {
     public class BinnacleService
     {
-        private readonly IMongoCollection<LogRegister> _logsCollection;
+        private readonly IMongoCollection<LogLine> _logsCollection;
         private readonly ILogger<BinnacleController> _logger;
 
         public BinnacleService(ApplicationContext dbContext, ILogger<BinnacleController> logger)
@@ -21,26 +17,33 @@ namespace NaviMente.WebApi.Infrastructure.Services
             _logger = logger;
         }
 
-        public async Task<List<BinnacleDTO>> GetDeviceLogsAsync(string serialNumber)
+        public async Task<List<LogLineDTO>> GetDeviceLogsAsync(string serialNumber, int? severity)
         {
-            var filtro = Builders<LogRegister>.Filter.
-                Regex(log => log.FileName, new BsonRegularExpression($@"_\d*{serialNumber}\.log$"));
+            var filter = Builders<LogLine>.Filter.Eq(l => l.SerialNumber, serialNumber);
 
-            List<LogRegister> logs = await _logsCollection.Find(filtro).ToListAsync();
+            if (severity.HasValue)
+            {
+                var severityFilter = Builders<LogLine>.Filter.Eq(l => l.Severity, severity.Value);
+                filter = Builders<LogLine>.Filter.And(filter, severityFilter);
+            }
 
-            List<LogEvent> logEvents = logs.SelectMany(log => log.Content ?? new List<LogEvent>()).ToList();
+            List<LogLine> logs = await _logsCollection
+                .Find(filter)
+                .SortBy(l => l.Timestamp)
+                .ToListAsync();
 
-            List<BinnacleDTO> groupedByDate = logEvents.GroupBy(logEvent => logEvent.Date?.Date)
-                                 .Where(group => group.Key.HasValue)
-                                 .Select(group => new BinnacleDTO
-                                 {
-                                     Date = group.Key.Value,
-                                     DayEvents = group.ToList()
-                                 })
-                                 .OrderBy(binnacle => binnacle.Date)
-                                 .ToList();
+            List<LogLineDTO> result = new List<LogLineDTO>();
+            foreach (LogLine log in logs)
+            {
+                result.Add(new LogLineDTO
+                {
+                    Severity = log.Severity,
+                    Timestamp = log.Timestamp.ToString("dd/MM/yyyy HH:mm:ss"),
+                    Message = log.Message
+                });
+            }
 
-            return groupedByDate;
+            return result;
         }
     }
 }
