@@ -20,7 +20,8 @@ type User = {
 };
 
 type Device = {
-    deviceName: string;
+    serialNumber: string;
+    name: string;
     lastUpdate: Date | null;
 }
 
@@ -169,8 +170,8 @@ export default function Profile() {
                         <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                             <strong>Devices:</strong>
                             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
-                                {user?.devices.map((device, index) => (
-                                    <li key={index}> - {device.deviceName}</li>
+                                {user?.devices.map((device) => (
+                                    <li key={device.serialNumber}> - {device.name}</li>
                                 ))}
                             </ul>
                             <div style={{ marginTop: "5px" }}>
@@ -241,9 +242,9 @@ export default function Profile() {
                                 value={selectedDevice}
                                 onChange={(e) => setSelectedDevice(e.target.value)}
                             >
-                                {user?.devices.map((device, index) => (
-                                    <option key={index} value={device.deviceName}>
-                                        {device.deviceName}
+                                {user?.devices.map((device) => (
+                                    <option key={device.serialNumber} value={device.name}>
+                                        {device.name}
                                     </option>
                                 ))}
                             </select>

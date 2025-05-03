@@ -2,7 +2,8 @@
 { 
     public class DeviceDTO
     {
-        public string? DeviceName { get; set; }
+        public required string SerialNumber { get; set; }
+        public string? Name { get; set; }
         public DateTime? LastUpdate { get; set; }
     }
 }

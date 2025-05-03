@@ -16,13 +16,13 @@ export default function Header({navigateTo}) {
   return (
     <nav className="navbar fixed-top d-flex align-items-center px-3" style={{ height: '70px', backgroundColor: 'white', boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)' }}>
       <div className="d-flex align-items-center">
-        <img onClick={() => navigateTo('/')} src={logo} alt="logo" className="img-fluid" style={{ width: '60px', height: '50px' }} />
-        <label onClick={() => navigateTo('/')} style={{ marginLeft: '10px', marginTop: '10px' }}>NaviMente</label>
+        <img onClick={() => navigateTo('/Home')} src={logo} alt="logo" className="img-fluid" style={{ width: '60px', height: '50px', cursor: 'pointer' }} />
+        <label onClick={() => navigateTo('/Home')} style={{ marginLeft: '10px', marginTop: '10px', cursor: 'pointer' }}>NaviMente</label>
       </div>
 
       <div style={{ justifyContent: 'flex-end' }}>
         <button
-          onClick={() => navigateTo("/")}
+          onClick={() => navigateTo("/Home")}
           className="btn btn-link"
           style={{ textDecoration: 'none', marginRight: '10px' }}
         >

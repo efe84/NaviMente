@@ -85,7 +85,8 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
                 var deviceDTO = new DeviceDTO()
                 {
-                    DeviceName = device.DeviceName,
+                    SerialNumber = device.SerialNumber ?? "",
+                    Name = device.DeviceName,
                     LastUpdate = (location != null ? location.Timestamp : null)
                 };
                 devicesList.Add(deviceDTO);

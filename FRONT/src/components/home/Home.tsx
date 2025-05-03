@@ -52,10 +52,10 @@ export default function Home() {
               <img src={chatIcon} alt="Chat Icon" style={{ width: "40px", height: "40px" }} />
               <h5 className="card-title">
                 <br />
-                Check last moves / Telegram Bot
+                Check Last Messages
               </h5>
               <p className="card-text text-muted">
-                Check the last information about your devices. You can also try our new Telegram Bot to ask any doubt.
+                Check the last information about your devices. You can filter severity to check for possible issues.
               </p>
             </div>
           </div>
