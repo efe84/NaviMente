@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using NaviMente.WebApi.Controllers;
 using NaviMente.WebApi.Domain.Shared.Entities;
@@ -12,11 +10,13 @@ namespace NaviMente.WebApi.Infrastructure.Services
     public class UserService
     {
         private readonly IMongoCollection<User> _usersCollection;
+        private readonly IMongoCollection<TelegramLinkCode> _codesCollection;
         private readonly ILogger<UserController> _logger;
 
         public UserService(ApplicationContext dbContext, ILogger<UserController> logger)
         {
             _usersCollection = dbContext.Users;
+            _codesCollection = dbContext.Codes;
             _logger = logger;
         }
 
@@ -133,6 +133,33 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 throw new Exception($"Failed to add phone number for user: {username}");
 
             _logger.LogInformation("Successfully added phone number for {username}", username);
+        }
+
+        public async Task<string> GenerateLinkCode(string userId)
+        {
+            string code = Guid.NewGuid().ToString("N")[..6].ToUpper();
+
+            DateTime expiresAt = DateTime.UtcNow.AddMinutes(10);
+
+            TelegramLinkCode codeEntry = new()
+            {
+                Code = code,
+                UserId = long.Parse(userId),
+                ExpiresAt = expiresAt
+            };
+
+            await _codesCollection.DeleteManyAsync(c => c.UserId == long.Parse(userId));
+            await _codesCollection.InsertOneAsync(codeEntry);
+
+            return code;
+        }
+
+        public async Task UnlinkTelegram(string userId)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.UserId, long.Parse(userId));
+            var update = Builders<User>.Update.Set(u => u.TelegramChatId, null);
+
+            await _usersCollection.UpdateOneAsync(filter, update);
         }
     }
 }

@@ -38,3 +38,11 @@ export function Register(username: string, password: string, email: string, phon
         deviceId
     }};
 };
+
+export function GenerateTelegramCode(userId: number) {
+    return {url: `/User/GenerateCode?userId=${userId}`, method: ApiMethod.POST};
+};
+
+export function UnlinkTelegram(userId: number) {
+    return {url: `/User/UnlinkTelegram?userId=${userId}`, method: ApiMethod.PUT};
+};

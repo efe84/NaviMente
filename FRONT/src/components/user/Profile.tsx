@@ -5,7 +5,7 @@ import image from '../../assets/user.png';
 import add from '../../assets/add.png';
 import linked from '../../assets/linked.png'
 import { useApi } from '../../shared/hooks/useApi';
-import { AddPhone, GetUser } from '../../api/authApi';
+import { AddPhone, GenerateTelegramCode, GetUser, UnlinkTelegram } from '../../api/authApi';
 import { GetDevices } from '../../api/deviceApi';
 
 type User = {
@@ -15,7 +15,7 @@ type User = {
     mainPhone: string;
     otherPhones: string[];
     role: number;
-    telegramLinked: boolean;
+    telegramChatId: number;
     devices: Device[];
 };
 
@@ -34,6 +34,8 @@ export default function Profile() {
     const [newPhone, setNewPhone] = useState("");
     const [showAddDevice, setShowAddDevice] = useState(false);
     const [newDevice, setNewDevice] = useState("");
+    const [telegramCode, setTelegramCode] = useState<number>();
+    const [showTelegramInstructions, setShowTelegramInstructions] = useState(false);
 
     useEffect(() => {
         if (username != null && username != undefined) {
@@ -45,7 +47,7 @@ export default function Profile() {
                     mainPhone: result.mainPhone,
                     otherPhones: result.otherPhones || [],
                     role: result.role,
-                    telegramLinked: false, //TODO: CAMBIAR POR EL BOOLEANO DE SI ESTA LINKED
+                    telegramChatId: result.telegramChatId,
                     devices: []
                 };
                 setUser(parsedUser);
@@ -64,14 +66,14 @@ export default function Profile() {
     }, [username]);
 
     const addAdditionalPhone = () => {
-        if(username != null){
+        if (username != null) {
             callApi(AddPhone(username, newPhone)).then((result: any) => {
                 setUser((prevUser) =>
                     prevUser
                         ? {
-                              ...prevUser,
-                              otherPhones: result,
-                          }
+                            ...prevUser,
+                            otherPhones: result,
+                        }
                         : null
                 );
             })
@@ -82,8 +84,36 @@ export default function Profile() {
 
     };
 
-    const toggleTelegramLink = () => {
+    const toggleTelegramLink = async (userId: any) => {
+        if (!userId) return;
 
+        if (user?.telegramChatId != null) {
+            const confirmed = window.confirm("Are you sure you want to unlink your Telegram account?");
+            if (confirmed) {
+                callApi(UnlinkTelegram(userId)).then(() => {
+                    if (username != null) {
+                        callApi(GetUser(username)).then((result: any) => {
+                            const updatedUser: User = {
+                                userId: result.userId,
+                                username: result.username,
+                                email: result.email,
+                                mainPhone: result.mainPhone,
+                                otherPhones: result.otherPhones || [],
+                                role: result.role,
+                                telegramChatId: result.telegramChatId,
+                                devices: user?.devices || []
+                            };
+                            setUser(updatedUser);
+                        });
+                    }
+                });
+            }
+        } else {
+            callApi(GenerateTelegramCode(userId)).then((result: any) => {
+                setTelegramCode(result.code);
+                setShowTelegramInstructions(true);
+            });
+        }
     };
 
     return (
@@ -251,7 +281,6 @@ export default function Profile() {
                             <button
                                 onClick={() => {
                                     if (window.confirm(`Are you sure you want to remove ${selectedDevice}?`)) {
-                                        toggleTelegramLink();
                                         setSelectedDevice('');
                                     }
                                 }}
@@ -282,16 +311,45 @@ export default function Profile() {
                                 cursor: 'pointer',
                                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                             }}
-                            onClick={toggleTelegramLink}
+                            onClick={() => toggleTelegramLink(user?.userId)}
                         >
-                            {user?.telegramLinked ? 'Unlink Telegram' : 'Link Telegram'}
+                            {user?.telegramChatId != null ? 'Unlink Telegram' : 'Link Telegram'}
                         </button>
-                        {user?.telegramLinked ?
+                        {user?.telegramChatId != null ?
                             <img src={linked} style={{ height: "30px", marginLeft: "10px" }} />
                             :
                             <></>
                         }
                     </div>
+                    {showTelegramInstructions && telegramCode && (
+                        <div style={{
+                            backgroundColor: "#f1f1f1",
+                            padding: "15px",
+                            marginTop: "15px",
+                            marginLeft: "15px",
+                            borderRadius: "8px",
+                            width: "fit-content"
+                        }}>
+                            <p>
+                                1. Click here to open the Telegram Bot:{" "}
+                                <a href="https://t.me/NaviMente_Bot" target="_blank" rel="noopener noreferrer">
+                                    NaviMente BOT
+                                </a>
+                            </p>
+                            <p>
+                                2. Once open, type this message.
+                            </p>
+                            <code style={{ background: "#ddd", padding: "6px 10px", borderRadius: "5px", display: "inline-block", fontSize: "16px" }}>
+                                /vincular {telegramCode}
+                            </code>
+                            <p>
+                                3. After telegram confirms validation, reload the page.
+                            </p>
+                            <p style={{ marginTop: "10px", fontStyle: "italic", color: "#555" }}>
+                                This codes expires in 10 minutes.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
             <Footer />
