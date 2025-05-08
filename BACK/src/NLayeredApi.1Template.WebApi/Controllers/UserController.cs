@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Enums;
 using NaviMente.WebApi.Dto.User;
@@ -164,5 +163,27 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
+        [HttpPost("GenerateCode")]
+        public async Task<IActionResult> GenerateCode([FromQuery] string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("Invalid user ID");
+
+            string code = await _userService.GenerateLinkCode(userId);
+
+            return Ok(new { code });
+        }
+
+        [HttpPut("UnlinkTelegram")]
+        public async Task<IActionResult> UnlinkTelegram([FromQuery] string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("Invalid user ID");
+
+            await _userService.UnlinkTelegram(userId);
+
+            return Ok();
+        }
     }
+
 }

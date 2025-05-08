@@ -30,5 +30,8 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
 
         [BsonElement("role")]
         public UserRolesEnum Role {  get; set; }
+
+        [BsonElement("telegramChatId")]
+        public long? TelegramChatId { get; set; }
     }
 }

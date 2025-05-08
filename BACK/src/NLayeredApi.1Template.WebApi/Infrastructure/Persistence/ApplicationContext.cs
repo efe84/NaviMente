@@ -22,5 +22,6 @@ namespace NaviMente.WebApi.Infrastructure.Persistence
         public IMongoCollection<Counter> Counters => _database.GetCollection<Counter>("Counters");
         public IMongoCollection<RestrictedZone> Zone => _database.GetCollection<RestrictedZone>("RestrictedZones");
         public IMongoCollection<LogLine> Logs => _database.GetCollection<LogLine>("Logs");
+        public IMongoCollection<TelegramLinkCode> Codes => _database.GetCollection<TelegramLinkCode>("Codes");
     }
 }
