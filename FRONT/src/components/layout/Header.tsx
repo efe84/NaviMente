@@ -9,7 +9,7 @@ export default function Header({navigateTo}) {
 
     if (username != null) {
         window.localStorage.removeItem('userName');
-        navigateTo('/');
+        navigateTo('/Home');
     }
   };
 

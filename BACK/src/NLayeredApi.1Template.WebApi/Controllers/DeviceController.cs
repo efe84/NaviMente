@@ -5,6 +5,7 @@ using NaviMente.WebApi.Dto.Device;
 using NaviMente.WebApi.Infrastructure.Persistence;
 using MongoDB.Driver.GeoJsonObjectModel;
 using MongoDB.Driver;
+using NaviMente.WebApi.Domain.Shared.Entities;
 
 namespace NaviMente.WebApi.Controllers
 {
@@ -72,16 +73,16 @@ namespace NaviMente.WebApi.Controllers
         /// <param name="deviceRegister">Username, email, contraseña y numero de telefono</param>
         /// <returns></returns>
         [HttpDelete("Unassign")]
-        public async Task<IActionResult> UnassignDevice([FromBody] DeviceUnassignDTO deviceUnassign)
+        public async Task<IActionResult> UnassignDevice([FromQuery] long userId, [FromQuery] string serialNumber)
         {
             try
             {
-                await _deviceService.UnassignDeviceAsync(deviceUnassign.UserId, deviceUnassign.SerialNumber);
-                return Ok();
+                User userAct = await _deviceService.UnassignDeviceAsync(userId, serialNumber);
+                return Ok(userAct);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error desenlazando el usuario {user} del NaviBand {deviceName}", deviceUnassign.UserId, deviceUnassign.SerialNumber);
+                _logger.LogError(ex, "Error desenlazando el usuario {user} del NaviBand {deviceName}", userId, serialNumber);
                 return BadRequest();
             }
         }

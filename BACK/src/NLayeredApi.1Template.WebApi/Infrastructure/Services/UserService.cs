@@ -116,7 +116,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
             _logger.LogInformation("Succesfully edited {username}", username);
         }
 
-        public async Task AddPhone(string username, string newPhoneNumber)
+        public async Task<User> AddPhone(string username, string newPhoneNumber)
         {
             User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
             if (actualUser == null)
@@ -133,6 +133,29 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 throw new Exception($"Failed to add phone number for user: {username}");
 
             _logger.LogInformation("Successfully added phone number for {username}", username);
+
+            return _usersCollection.Find(u => u.Username == username).FirstOrDefault();
+        }
+
+        public async Task<User> RemovePhone(string username, string phoneNumber)
+        {
+            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
+            if (actualUser == null)
+                throw new Exception($"User to edit not found: {username}");
+
+            var updateDefinition = Builders<User>.Update.Pull(u => u.OtherPhones, phoneNumber);
+
+            var result = await _usersCollection.UpdateOneAsync(
+                u => u.Username == username,
+                updateDefinition
+            );
+
+            if (result.MatchedCount == 0)
+                throw new Exception($"Failed to remove phone number for user: {username}");
+
+            _logger.LogInformation("Successfully removed phone number for {username}", username);
+
+            return _usersCollection.Find(u => u.Username == username).FirstOrDefault();
         }
 
         public async Task<string> GenerateLinkCode(string userId)

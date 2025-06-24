@@ -95,7 +95,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
             return devicesList;
         }
 
-        public async Task UnassignDeviceAsync(long userId, string serialNumber)
+        public async Task<User> UnassignDeviceAsync(long userId, string serialNumber)
         {
 
             var existingDevice = await _devicesCollection
@@ -121,6 +121,8 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
             if (updateResult.ModifiedCount == 0)
                 throw new Exception("Failed to unassign the naviBand. Please try again.");
+
+            return _usersCollection.Find(u => u.UserId == userId).FirstOrDefault();
         }
 
         public async Task AddRestrictedZone(ZoneDTO zoneDto)

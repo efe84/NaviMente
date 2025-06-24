@@ -11,3 +11,11 @@ export function BlockZone(payload: { serialNumber: string; shapes: ({ type: stri
 export function GetDevices(userId: string) {
     return {url: `/Device/List?userId=${userId}`, method: ApiMethod.GET};
 };
+
+export function UnassignDevice(userId: number, serialNumber: string) {
+    return {url: `/Device/Unassign?userId=${userId}&&serialNumber=${serialNumber}`, method: ApiMethod.DELETE};
+};
+
+export function RegisterDevice(deviceRegister: any) {
+    return {url: `/Device/Register`, method: ApiMethod.POST, body: deviceRegister};
+};

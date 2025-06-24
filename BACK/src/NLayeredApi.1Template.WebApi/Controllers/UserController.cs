@@ -148,17 +148,33 @@ namespace NaviMente.WebApi.Controllers
         }
 
         [HttpPost("AddPhone")]
-        public async Task<IActionResult> AddPhone([FromBody] string newPhone, [FromQuery] string username)
+        public async Task<IActionResult> AddPhone([FromQuery] string username, [FromBody] string newPhone)
         {
             try
             {
-                _logger.LogInformation("Actualizando el telefono principal del usuario {userName}", username);
-                await _userService.AddPhone(username, newPhone);
-                return Ok();
+                _logger.LogInformation("Actualizando el telefono principal del usuario {username}", username);
+                User userAct = await _userService.AddPhone(username, newPhone);
+                return Ok(userAct);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error actualizando el telefono principal del usuario {userLogin}", username);
+                _logger.LogError(ex, "Error actualizando el telefono principal del usuario {username}", username);
+                return BadRequest();
+            }
+        }
+
+        [HttpDelete("DeletePhone")]
+        public async Task<IActionResult> DeletePhone([FromQuery] string username, [FromQuery] string phoneNumber)
+        {
+            try
+            {
+                _logger.LogInformation("Actualizando el telefono principal del usuario {username}", username);
+                User userAct = await _userService.RemovePhone(username, phoneNumber);
+                return Ok(userAct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error actualizando el telefono principal del usuario {userId}", username);
                 return BadRequest();
             }
         }

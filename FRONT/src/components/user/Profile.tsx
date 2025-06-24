@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import Footer from '../layout/Footer';
 import image from '../../assets/user.png';
 import add from '../../assets/add.png';
-import linked from '../../assets/linked.png'
+import linked from '../../assets/linked.png';
+import edit from '../../assets/edit.png';
+import deleteIcon from '../../assets/delete.png';
 import { useApi } from '../../shared/hooks/useApi';
-import { AddPhone, GenerateTelegramCode, GetUser, UnlinkTelegram } from '../../api/authApi';
-import { GetDevices } from '../../api/deviceApi';
+import { AddPhone, RemovePhone, EditEmail, EditMainPhone, GenerateTelegramCode, GetUser, UnlinkTelegram } from '../../api/authApi';
+import { GetDevices, UnassignDevice, RegisterDevice } from '../../api/deviceApi';
 
 type User = {
     userId: number;
@@ -36,6 +38,13 @@ export default function Profile() {
     const [newDevice, setNewDevice] = useState("");
     const [telegramCode, setTelegramCode] = useState<number>();
     const [showTelegramInstructions, setShowTelegramInstructions] = useState(false);
+    const [editingEmail, setEditingEmail] = useState(false);
+    const [newEmail, setNewEmail] = useState("");
+    const [editingMainPhone, setEditingMainPhone] = useState(false);
+    const [newMainPhone, setNewMainPhone] = useState("");
+    const [showAddDeviceForm, setShowAddDeviceForm] = useState(false);
+    const [newDeviceName, setNewDeviceName] = useState("");
+    const [newSerialNumber, setNewSerialNumber] = useState("");
 
     useEffect(() => {
         if (username != null && username != undefined) {
@@ -66,22 +75,87 @@ export default function Profile() {
     }, [username]);
 
     const addAdditionalPhone = () => {
-        if (username != null) {
+        if (user != null) {
             callApi(AddPhone(username, newPhone)).then((result: any) => {
-                setUser((prevUser) =>
-                    prevUser
-                        ? {
-                            ...prevUser,
-                            otherPhones: result,
-                        }
-                        : null
-                );
+                const parsedUser: User = {
+                    userId: result.userId,
+                    username: result.username,
+                    email: result.email,
+                    mainPhone: result.mainPhone,
+                    otherPhones: result.otherPhones || [],
+                    role: result.role,
+                    telegramChatId: result.telegramChatId,
+                    devices: []
+                };
+                setUser(parsedUser);
             })
         }
     };
 
-    const addDevice = () => {
+    const removePhone = (phoneNumber: string) => {
+        if (user) {
+            callApi(RemovePhone(username, phoneNumber)).then((result: any) => {
+                const updatedUser: User = {
+                    userId: result.userId,
+                    username: result.username,
+                    email: result.email,
+                    mainPhone: result.mainPhone,
+                    otherPhones: result.otherPhones || [],
+                    role: result.role,
+                    telegramChatId: result.telegramChatId,
+                    devices: result.devices || []
+                };
+                setUser(updatedUser);
+            }).catch(err => {
+                console.error("Error removing phone:", err);
+                alert("Failed to remove phone number");
+            });
+        }
+    };
 
+    const registerDevice = () => {
+        if (!user) return;
+
+        const payload = {
+            DeviceName: newDeviceName.trim(),
+            SerialNumber: newSerialNumber.trim(),
+            UserId: user.userId
+        };
+
+        if (!payload.DeviceName || !payload.SerialNumber) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        callApi(RegisterDevice(payload)).then(() => {
+            window.location.reload();
+        }).catch(() => {
+            alert("Error registering device.");
+        });
+    };
+
+    const editEmail = (newEmail: string) => {
+        if (user != null) {
+            callApi(EditEmail(username, newEmail)).then(() => {
+                window.location.reload();
+            });
+        }
+    };
+
+    const editMainPhone = (newPhone: string) => {
+        if (user != null) {
+            callApi(EditMainPhone(username, newPhone)).then(() => {
+                window.location.reload();
+            });
+        }
+    };
+
+    const unlinkDevice = () => {
+        if (user != null) {
+            callApi(UnassignDevice(user?.userId, selectedDevice)).then(() => {
+                window.location.reload();
+            })
+        }
     };
 
     const toggleTelegramLink = async (userId: any) => {
@@ -132,19 +206,91 @@ export default function Profile() {
                 <div style={{ flex: 1, marginRight: '20px' }}>
                     <div style={{ marginBottom: '20px', padding: '20px' }}>
                         <h3>User Information</h3>
-                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
-                            <strong>Email: </strong>
-                            <span>{user?.email}</span>
+                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
+                            <strong style={{ marginRight: '10px' }}>Email: </strong>
+                            {editingEmail ? (
+                                <input
+                                    type="text"
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                    style={{
+                                        padding: '5px 10px',
+                                        fontSize: '14px',
+                                        border: '1px solid #ddd',
+                                        borderRadius: '5px',
+                                        width: '250px',
+                                        marginRight: '10px'
+                                    }}
+                                />
+                            ) : (
+                                <span style={{ marginRight: '10px' }}>{user?.email}</span>
+                            )}
+                            <img
+                                src={editingEmail ? linked : edit}
+                                alt={editingEmail ? "Save Email" : "Edit Email"}
+                                style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                onClick={() => {
+                                    if (editingEmail) {
+                                        if (newEmail.trim()) {
+                                            editEmail(newEmail);
+                                            setEditingEmail(false);
+                                        }
+                                    } else {
+                                        setNewEmail(user?.email || "");
+                                        setEditingEmail(true);
+                                    }
+                                }}
+                            />
                         </div>
-                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
-                            <strong>Main Phone: </strong>
-                            <span>{user?.mainPhone}</span>
+                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
+                            <strong style={{ marginRight: '10px' }}>Main Phone: </strong>
+                            {editingMainPhone ? (
+                                <input
+                                    type="text"
+                                    value={newMainPhone}
+                                    onChange={(e) => setNewMainPhone(e.target.value)}
+                                    style={{
+                                        padding: '5px 10px',
+                                        fontSize: '14px',
+                                        border: '1px solid #ddd',
+                                        borderRadius: '5px',
+                                        width: '200px',
+                                        marginRight: '10px'
+                                    }}
+                                />
+                            ) : (
+                                <span style={{ marginRight: '10px' }}>{user?.mainPhone}</span>
+                            )}
+                            <img
+                                src={editingMainPhone ? linked : edit}
+                                alt={editingMainPhone ? "Save Main Phone" : "Edit Main Phone"}
+                                style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                onClick={() => {
+                                    if (editingMainPhone) {
+                                        if (newMainPhone.trim()) {
+                                            editMainPhone(newMainPhone);
+                                        }
+                                        setEditingMainPhone(false);
+                                    } else {
+                                        setNewMainPhone(user?.mainPhone || "");
+                                        setEditingMainPhone(true);
+                                    }
+                                }}
+                            />
                         </div>
                         <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                             <strong>Additional Phones: </strong>
                             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
                                 {user?.otherPhones.map((phone, index) => (
-                                    <li key={index}> - {phone}</li>
+                                    <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start', marginBottom: '5px' }}>
+                                        <span>- {phone}</span>
+                                        <img
+                                            src={deleteIcon}
+                                            alt="Delete Phone"
+                                            style={{ width: '16px', height: '16px', cursor: 'pointer', marginLeft: '10px' }}
+                                            onClick={() => removePhone(phone)}
+                                        />
+                                    </li>
                                 ))}
                             </ul>
                             <div style={{ marginTop: "5px" }}>
@@ -209,48 +355,58 @@ export default function Profile() {
                                     src={add}
                                     alt="Add Device"
                                     style={{ width: '32px', height: '32px', cursor: 'pointer' }}
-                                    onClick={() => setShowAddDevice(!showAddDevice)}
+                                    onClick={() => setShowAddDeviceForm(!showAddDeviceForm)}
                                 />
-                                {showAddDevice && (
-                                    <input
-                                        type="text"
-                                        placeholder="Enter new device"
-                                        value={newDevice}
-                                        onChange={(e) => setNewDevice(e.target.value)}
-                                        style={{
-                                            marginLeft: '10px',
-                                            padding: '10px',
-                                            fontSize: '14px',
-                                            border: '1px solid #ddd',
-                                            borderRadius: '8px',
-                                            width: '200px',
-                                            outline: 'none',
-                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                        }}
-                                    />
-                                )}
-                                {showAddDevice && (
-                                    <button
-                                        onClick={() => {
-                                            if (newDevice.trim()) {
-                                                addDevice();
-                                                setNewDevice('');
-                                                setShowAddDevice(false);
-                                            }
-                                        }}
-                                        style={{
-                                            marginLeft: '10px',
-                                            padding: '10px 15px',
-                                            fontSize: '14px',
-                                            backgroundColor: '#DFDFDF',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                        }}
-                                    >
-                                        Add
-                                    </button>
+                                {showAddDeviceForm && (
+                                    <div style={{ marginTop: '10px' }}>
+                                        <input
+                                            type="text"
+                                            placeholder="Device Name"
+                                            value={newDeviceName}
+                                            onChange={(e) => setNewDeviceName(e.target.value)}
+                                            style={{
+                                                padding: '10px',
+                                                fontSize: '14px',
+                                                border: '1px solid #ddd',
+                                                borderRadius: '8px',
+                                                width: '200px',
+                                                marginRight: '10px'
+                                            }}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Serial Number"
+                                            value={newSerialNumber}
+                                            onChange={(e) => setNewSerialNumber(e.target.value)}
+                                            style={{
+                                                padding: '10px',
+                                                fontSize: '14px',
+                                                border: '1px solid #ddd',
+                                                borderRadius: '8px',
+                                                width: '200px',
+                                                marginRight: '10px'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                registerDevice();
+                                                setShowAddDeviceForm(false);
+                                                setNewDeviceName("");
+                                                setNewSerialNumber("");
+                                            }}
+                                            style={{
+                                                padding: '10px 15px',
+                                                fontSize: '14px',
+                                                backgroundColor: '#DFDFDF',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                            }}
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -273,14 +429,15 @@ export default function Profile() {
                                 onChange={(e) => setSelectedDevice(e.target.value)}
                             >
                                 {user?.devices.map((device) => (
-                                    <option key={device.serialNumber} value={device.name}>
+                                    <option key={device.serialNumber} value={device.serialNumber}>
                                         {device.name}
                                     </option>
                                 ))}
                             </select>
                             <button
                                 onClick={() => {
-                                    if (window.confirm(`Are you sure you want to remove ${selectedDevice}?`)) {
+                                    if (window.confirm(`Are you sure you want to remove the device?`)) {
+                                        unlinkDevice();
                                         setSelectedDevice('');
                                     }
                                 }}

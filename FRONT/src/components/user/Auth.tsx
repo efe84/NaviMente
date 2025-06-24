@@ -38,12 +38,12 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
         if (isLoginMode) {
             callApi(Login(username, password)).then(() => {
                 window.localStorage.setItem('userName', username);
-                navigate('/');
+                navigate('/Home');
             });
         } else {
             callApi(Register(username, password, email, phoneNumber, serialNumber)).then(() => {
                 window.localStorage.setItem('userName', username);
-                navigate('/');
+                navigate('/Home');
             });
         }
     };
