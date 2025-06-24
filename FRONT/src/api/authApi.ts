@@ -20,7 +20,11 @@ export function EditMainPhone(username: string, newMainPhone: string) {
 };
 
 export function AddPhone(username: string, newPhone: string) {
-    return {url: `/User/AddPhone?username=${username}`, method: ApiMethod.POST, body: {newPhone}};
+    return {url: `/User/AddPhone?username=${username}`, method: ApiMethod.POST, body: newPhone};
+};
+
+export function RemovePhone(username: string, phoneNumber: string) {
+    return {url: `/User/DeletePhone?username=${username}&phoneNumber=${phoneNumber}`, method: ApiMethod.DELETE};
 };
 
 export function Logout(username: string) {
