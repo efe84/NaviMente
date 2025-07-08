@@ -5,7 +5,10 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
 {
     public class Counter
     {
+        [BsonId]
+        public required string Id { get; set; }
+
         [BsonElement("sequenceValue")]
-        public long? UserId { get; set; }
+        public required long SequenceValue { get; set; }
     }
 }

@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Amqp.Transaction;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 using MongoDB.Driver.GeoJsonObjectModel;
 using NaviMente.WebApi.Controllers;
@@ -17,6 +14,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
         private readonly IMongoCollection<Location> _locationsCollection;
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<RestrictedZone> _restrictedZonesCollection;
+        private readonly IMongoCollection<Counter> _countersCollection;
         private readonly ILogger<DeviceController> _logger; 
 
         public DeviceService(ApplicationContext dbContext, ILogger<DeviceController> logger)
@@ -25,6 +23,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
             _devicesCollection = dbContext.Devices;
             _usersCollection = dbContext.Users;
             _restrictedZonesCollection = dbContext.Zone;
+            _countersCollection = dbContext.Counters;
             _logger = logger;
         }
 
@@ -69,7 +68,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 .FirstOrDefaultAsync();
 
             if (user == null)
-                throw new Exception($"User with userId '{userId}' not found.");
+                throw new Exception($"User '{userId}' not found.");
 
             var devices = await _devicesCollection
                 .Find(d => d.UserId == user.UserId)
@@ -127,59 +126,122 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
         public async Task AddRestrictedZone(ZoneDTO zoneDto)
         {
+            var tasks = new List<Task>();
 
-            var shapes = new List<GeoJsonPolygon<GeoJson2DGeographicCoordinates>>();
-
-            foreach (var polygon in zoneDto.Shapes)
+            foreach (var shapeDto in zoneDto.Shapes)
             {
-                var coordinates = new List<GeoJson2DGeographicCoordinates>();
+                long newZoneId = await GetNextSequenceValue("zoneId");
 
-                foreach (var coord in polygon.Coordinates[0])
+                RestrictedZone zone = new RestrictedZone
                 {
-                    coordinates.Add(new GeoJson2DGeographicCoordinates(coord[0], coord[1]));
+                    ZoneId = newZoneId,
+                    SerialNumber = zoneDto.SerialNumber,
+                    CreatedAt = DateTime.UtcNow,
+                    Type = shapeDto.Type.ToLower()
+                };
+
+                switch (shapeDto.Type.ToLower())
+                {
+                    case "circle":
+                        zone.Center = new GeoJson2DGeographicCoordinates(shapeDto.Center.Lng, shapeDto.Center.Lat);
+                        zone.Radius = shapeDto.Radius;
+                        break;
+
+                    case "rectangle":
+                        zone.Bounds = shapeDto.Bounds;
+                        break;
+
+                    case "polygon":
+                        var coordinates = new List<GeoJson2DGeographicCoordinates>();
+                        foreach (var coord in shapeDto.Coordinates)
+                        {
+                            coordinates.Add(new GeoJson2DGeographicCoordinates(coord[0], coord[1]));
+                        }
+                        var linearRing = new GeoJsonLinearRingCoordinates<GeoJson2DGeographicCoordinates>(coordinates);
+                        var polygonCoordinates = new GeoJsonPolygonCoordinates<GeoJson2DGeographicCoordinates>(linearRing);
+                        zone.Shape = new GeoJsonPolygon<GeoJson2DGeographicCoordinates>(polygonCoordinates);
+                        break;
                 }
 
-                var linearRing = new GeoJsonLinearRingCoordinates<GeoJson2DGeographicCoordinates>(coordinates);
-                var polygonCoordinates = new GeoJsonPolygonCoordinates<GeoJson2DGeographicCoordinates>(linearRing);
-                var geoPolygon = new GeoJsonPolygon<GeoJson2DGeographicCoordinates>(polygonCoordinates);
-
-                shapes.Add(geoPolygon);
+                tasks.Add(_restrictedZonesCollection.InsertOneAsync(zone));
             }
 
-            var zone = new RestrictedZone
+            await Task.WhenAll(tasks);
+        }
+
+        public async Task<List<ZoneOutputDTO>> GetRestrictedZones(string serialNumber)
+        {
+            var filter = Builders<RestrictedZone>.Filter.Eq(z => z.SerialNumber, serialNumber);
+            var zones = await _restrictedZonesCollection.Find(filter).ToListAsync();
+
+            var output = zones.Select(z =>
             {
-                SerialNumber = zoneDto.SerialNumber,
-                Shapes = shapes,
-                CreatedAt = DateTime.UtcNow
+                var shape = new ShapeOutputDTO
+                {
+                    Type = z.Type
+                };
+
+                switch (z.Type.ToLower())
+                {
+                    case "circle":
+                        if (z.Center != null)
+                        {
+                            shape.Center = new List<double> { z.Center.Longitude, z.Center.Latitude };
+                        }
+                        shape.Radius = z.Radius;
+                        break;
+
+                    case "rectangle":
+                        shape.Bounds = z.Bounds;
+                        break;
+
+                    case "polygon":
+                        if (z.Shape != null)
+                        {
+                            shape.Coordinates = z.Shape.Coordinates.Exterior.Positions
+                                .Select(p => new List<double> { p.Longitude, p.Latitude })
+                                .ToList();
+                        }
+                        break;
+                }
+
+                return new ZoneOutputDTO
+                {
+                    ZoneId = z.ZoneId,
+                    SerialNumber = z.SerialNumber,
+                    CreatedAt = z.CreatedAt,
+                    Shape = shape
+                };
+            })
+            .ToList();
+
+            return output;
+        }
+
+        public async Task<bool> DeleteZone(long zoneId)
+        {
+            var filter = Builders<RestrictedZone>.Filter.Eq(z => z.ZoneId, zoneId);
+            var result = await _restrictedZonesCollection.DeleteOneAsync(filter);
+
+            if (result.DeletedCount == 0)
+                throw new Exception("Zona no encontrada");
+
+            return true;
+        }
+
+        private async Task<long> GetNextSequenceValue(string sequenceName)
+        {
+            var filter = Builders<Counter>.Filter.Eq(c => c.Id, sequenceName);
+            var update = Builders<Counter>.Update.Inc(c => c.SequenceValue, 1);
+
+            var options = new FindOneAndUpdateOptions<Counter>
+            {
+                ReturnDocument = ReturnDocument.After,
+                IsUpsert = true
             };
 
-            await _restrictedZonesCollection.InsertOneAsync(zone);
+            var updatedCounter = await _countersCollection.FindOneAndUpdateAsync(filter, update, options);
+            return updatedCounter.SequenceValue;
         }
-
-        public async Task<List<ZoneOutputDTO>?> GetRestrictedZones(string serialNumber)
-        {
-
-            var zones = await _restrictedZonesCollection.Find(Builders<RestrictedZone>.Filter.Empty).ToListAsync();
-
-            var zoneDtos = zones.Select(zone => new ZoneOutputDTO
-            {
-                SerialNumber = zone.SerialNumber,
-                Shapes = zone.Shapes.Select(polygon => new ShapeDto
-                {
-                    Type = "Polygon",
-                    Coordinates = new List<List<CoordinateDto>>
-                    {
-                        polygon.Coordinates.Exterior.Positions.Select(coord => new CoordinateDto
-                        {
-                            Latitude = coord.Latitude,
-                            Longitude = coord.Longitude
-                        }).ToList()
-                    }
-                }).ToList()
-            }).ToList();
-
-            return zoneDtos;
-        }
-
     }
 }

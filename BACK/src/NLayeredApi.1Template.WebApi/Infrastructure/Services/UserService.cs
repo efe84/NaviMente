@@ -11,12 +11,14 @@ namespace NaviMente.WebApi.Infrastructure.Services
     {
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<TelegramLinkCode> _codesCollection;
+        private readonly IMongoCollection<Device> _devicesCollection;
         private readonly ILogger<UserController> _logger;
 
         public UserService(ApplicationContext dbContext, ILogger<UserController> logger)
         {
             _usersCollection = dbContext.Users;
             _codesCollection = dbContext.Codes;
+            _devicesCollection = dbContext.Devices;
             _logger = logger;
         }
 
@@ -37,6 +39,21 @@ namespace NaviMente.WebApi.Infrastructure.Services
             };
 
             await _usersCollection.InsertOneAsync(newUser);
+
+            if (userRegister.SerialNumber != null)
+            {
+                var filter = Builders<Device>.Filter.Eq(u => u.SerialNumber, userRegister.SerialNumber);
+
+                var update = Builders<Device>.Update
+                    .Set(u => u.DeviceName, userRegister.DeviceName)
+                    .Set(u => u.AssignedDate, DateTime.UtcNow)
+                    .Set(u => u.isActive, true);
+
+                var result = await _devicesCollection.UpdateOneAsync(filter, update);
+
+                if (result.MatchedCount == 0)
+                    throw new Exception("No device found with that SerialNumber.");
+            }
         }
 
         public async Task<User> GetUserInfo(string username)

@@ -33,13 +33,14 @@ export function Logout(username: string) {
     }};
 };
 
-export function Register(username: string, password: string, email: string, phoneNumber: string, deviceId: string) {
+export function Register(username: string, password: string, email: string, phoneNumber: string, deviceId: string, deviceName: string) {
     return {url: '/User/Register', method: ApiMethod.POST, body: {
         username,
         password,
         email,
         phoneNumber,
-        deviceId
+        deviceId,
+        deviceName
     }};
 };
 

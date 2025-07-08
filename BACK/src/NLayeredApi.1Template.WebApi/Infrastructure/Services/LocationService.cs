@@ -37,14 +37,16 @@ namespace NaviMente.WebApi.Infrastructure.Services
             throw new Exception("Tipo de location no correspondiente a Point");
         }
 
-        public LocationPointDTO GetLastLocation(string serialNumber)
+        public LocationPointDTO? GetLastLocation(string serialNumber)
         {
             try
             {
                 Location location = _locationCollection
                                     .Find(l => l.SerialNumber == serialNumber)
                                     .SortByDescending(l => l.Timestamp)
-                                    .FirstOrDefault() ?? throw new Exception($"Location not found for NaviBand {serialNumber}");
+                                    .FirstOrDefault();
+                if (location == null)
+                    return null;
 
                 if (location.LocationData is GeoJsonPoint<GeoJson2DCoordinates> point)
                 {
@@ -61,7 +63,6 @@ namespace NaviMente.WebApi.Infrastructure.Services
             }
             catch (Exception e)
             {
-                _logger.LogError(e,"No se encuentran registros para el naviBand seleccionado");
                 throw;
             }
         }

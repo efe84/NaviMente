@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using NaviMente.WebApi.Infrastructure.Services;
 using NaviMente.WebApi.Dto.Device;
 using NaviMente.WebApi.Infrastructure.Persistence;
-using MongoDB.Driver.GeoJsonObjectModel;
-using MongoDB.Driver;
 using NaviMente.WebApi.Domain.Shared.Entities;
 
 namespace NaviMente.WebApi.Controllers
@@ -49,7 +47,7 @@ namespace NaviMente.WebApi.Controllers
         /// <summary>
         /// Metodo Get para recuperar la lista de dispositivos del usuario
         /// </summary>
-        /// <param name="userName">Nombre del usuario</param>
+        /// <param name="userId">Id del usuario</param>
         /// <returns>Lista de dispositivos</returns>
         [HttpGet("List")]
         public async Task<IActionResult> GetUserDevices([FromQuery] string userId)
@@ -70,7 +68,8 @@ namespace NaviMente.WebApi.Controllers
         /// <summary>
         /// Método Delete para el registro de un nuevo dispositivo
         /// </summary>
-        /// <param name="deviceRegister">Username, email, contraseña y numero de telefono</param>
+        /// <param name="userId">Id del usuario</param>
+        /// <param name="serialNumber">SerialNumber del dispositivo a desvincular</param>
         /// <returns></returns>
         [HttpDelete("Unassign")]
         public async Task<IActionResult> UnassignDevice([FromQuery] long userId, [FromQuery] string serialNumber)
@@ -125,8 +124,26 @@ namespace NaviMente.WebApi.Controllers
                 _logger.LogError(ex, "Error recuperando las zonas restringidas");
                 return BadRequest();
             }
+        }
 
-            
+        /// <summary>
+        /// Método DELETE para eliminar una zona bloqueada
+        /// </summary>
+        /// <param name="zoneId">Numero de identificación de la zona</param>
+        /// <returns>true</returns>
+        [HttpDelete("DeleteZone")]
+        public async Task<IActionResult> DeleteZone([FromQuery] long zoneId)
+        {
+            try
+            {
+                await _deviceService.DeleteZone(zoneId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error recuperando las zonas restringidas");
+                return BadRequest();
+            }
         }
     }
 }

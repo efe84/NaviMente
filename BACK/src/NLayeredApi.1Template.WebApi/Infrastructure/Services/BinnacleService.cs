@@ -29,7 +29,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
             List<LogLine> logs = await _logsCollection
                 .Find(filter)
-                .SortBy(l => l.Timestamp)
+                .SortByDescending(l => l.Timestamp)
                 .ToListAsync();
 
             List<LogLineDTO> result = new List<LogLineDTO>();

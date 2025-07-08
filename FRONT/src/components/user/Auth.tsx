@@ -14,6 +14,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [serialNumber, setSerialNumber] = useState('');
+    const [deviceName, setDeviceName] = useState('');
 
     const onChangeField = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -21,27 +22,32 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
             setUsername(value);
         } else if (name === "password") {
             setPassword(value);
-
         } else if (name === "email") {
             setEmail(value);
-
         } else if (name === "phoneNumber") {
             setPhoneNumber(value);
         } else if (name === "serialNumber") {
             setSerialNumber(value);
+        } else if (name === "deviceName") {
+            setDeviceName(value);
         }
     };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
+        if (!isLoginMode && serialNumber.trim() !== "" && deviceName.trim() === "") {
+        alert("If you add NaviBand Code, you must create a NaviBand Name too.");
+        return;
+        }
+        
         if (isLoginMode) {
             callApi(Login(username, password)).then(() => {
                 window.localStorage.setItem('userName', username);
                 navigate('/Home');
             });
         } else {
-            callApi(Register(username, password, email, phoneNumber, serialNumber)).then(() => {
+            callApi(Register(username, password, email, phoneNumber, serialNumber, deviceName)).then(() => {
                 window.localStorage.setItem('userName', username);
                 navigate('/Home');
             });
@@ -183,6 +189,27 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                                     type="text"
                                     id="serialNumber"
                                     name="serialNumber"
+                                    style={{
+                                        width: "100%",
+                                        padding: "10px",
+                                        border: "1px solid #ddd",
+                                        borderRadius: "5px",
+                                        fontSize: "1rem",
+                                    }}
+                                    onChange={onChangeField}
+                                />
+                            </div>
+                            <div style={{ marginBottom: "20px" }}>
+                                <label
+                                    htmlFor="deviceName"
+                                    style={{ display: "block", fontSize: "0.9rem", marginBottom: "5px" }}
+                                >
+                                    [OPT] NaviBand Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="deviceName"
+                                    name="deviceName"
                                     style={{
                                         width: "100%",
                                         padding: "10px",

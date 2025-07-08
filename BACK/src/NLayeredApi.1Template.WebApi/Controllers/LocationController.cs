@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Location;
 using NaviMente.WebApi.Infrastructure.Persistence;
 using NaviMente.WebApi.Infrastructure.Services;
@@ -43,7 +42,7 @@ namespace NaviMente.WebApi.Controllers
         {
             try
             {
-                LocationPointDTO foundLocation = _locationService.GetLastLocation(serialNumber);
+                LocationPointDTO? foundLocation = _locationService.GetLastLocation(serialNumber);
                 return Ok(foundLocation);
             }
             catch (Exception ex)

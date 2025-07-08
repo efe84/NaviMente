@@ -9,5 +9,6 @@ namespace NaviMente.WebApi.Dto.User
         public string? Password { get; set; }
         public string? MainPhone { get; set; }
         public string? SerialNumber { get; set; }
+        public string? DeviceName { get; set; }
     }
 }
