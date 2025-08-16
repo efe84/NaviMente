@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NaviMente.WebApi.Dto.Device;
-using NaviMente.WebApi.Infrastructure.Persistence;
 using NaviMente.WebApi.Infrastructure.Services;
 
 namespace NaviMente.WebApi.Controllers
@@ -10,15 +8,13 @@ namespace NaviMente.WebApi.Controllers
     [ApiController]
     public class BinnacleController : ControllerBase
     {
-        private readonly IConfiguration _config;
         private readonly ILogger<BinnacleController> _logger;
-        private readonly BinnacleService _binnacleService;
+        private readonly IBinnacleService _binnacleService;
 
-        public BinnacleController(IConfiguration configuration, ILogger<BinnacleController> logger, ApplicationContext dbContext)
+        public BinnacleController(ILogger<BinnacleController> logger, IBinnacleService binnacleService)
         {
-            _config = configuration;
             _logger = logger;
-            _binnacleService = new BinnacleService(dbContext, logger);
+            _binnacleService = binnacleService;
         }
 
         /// <summary>
@@ -28,11 +24,11 @@ namespace NaviMente.WebApi.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("{serialNumber}")]
-        public async Task<IActionResult> GetDeviceLogs(string serialNumber, [FromQuery] int? severity)
+        public IActionResult GetDeviceLogs(string serialNumber, [FromQuery] int? severity)
         {
             try
             {
-                var logs = await _binnacleService.GetDeviceLogsAsync(serialNumber, severity);
+                var logs = _binnacleService.GetDeviceLogs(serialNumber, severity);
                 return Ok(logs);
             }
             catch (Exception ex)

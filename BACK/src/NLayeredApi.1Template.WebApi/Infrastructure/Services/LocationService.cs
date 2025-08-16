@@ -3,26 +3,24 @@ using MongoDB.Driver.GeoJsonObjectModel;
 using NaviMente.WebApi.Controllers;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Location;
-using NaviMente.WebApi.Infrastructure.Persistence;
+using NaviMente.WebApi.Infrastructure.Persistence.Repositories;
 
 namespace NaviMente.WebApi.Infrastructure.Services
 {
-    public class LocationService
+    public class LocationService: ILocationService
     {
-        private readonly IMongoCollection<Location> _locationCollection;
+        private readonly ILocationQueryRepository _locationQueryRepository;
         private readonly ILogger<LocationController> _logger;
 
-        public LocationService(ApplicationContext dbContext, ILogger<LocationController> logger)
+        public LocationService(ILogger<LocationController> logger, ILocationQueryRepository locationQueryRepository)
         {
-            _locationCollection = dbContext.Locations;
+            _locationQueryRepository = locationQueryRepository;
             _logger = logger;
         }
 
         public LocationPointDTO GetLocation(string serialNumber, DateTime timestamp)
         {
-            Location location = _locationCollection
-                                    .Find(l => l.SerialNumber == serialNumber && l.Timestamp == timestamp)
-                                    .FirstOrDefault() ?? throw new Exception($"Location not found for NaviBand {serialNumber}");
+            Location location = _locationQueryRepository.GetBySerialNumberAndTimestamp(serialNumber, timestamp) ?? throw new Exception("Ubicacion no encontrada");
 
             if (location.LocationData is GeoJsonPoint<GeoJson2DCoordinates> point)
             {
@@ -41,10 +39,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
         {
             try
             {
-                Location location = _locationCollection
-                                    .Find(l => l.SerialNumber == serialNumber)
-                                    .SortByDescending(l => l.Timestamp)
-                                    .FirstOrDefault();
+                Location? location = _locationQueryRepository.GetLastBySerialNumber(serialNumber);
                 if (location == null)
                     return null;
 
@@ -72,17 +67,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
             const int TimeGapMinutes = 30;
             var routes = new List<Dto.Location.Route>();
             var currentCoordinates = new List<List<double>>();
-
-            var filter = Builders<Location>.Filter.And(
-                Builders<Location>.Filter.Eq(l => l.SerialNumber, serialNumber),
-                Builders<Location>.Filter.Gte(l => l.Timestamp, startDate),
-                Builders<Location>.Filter.Lte(l => l.Timestamp, endDate)
-            );
-
-            var locations = _locationCollection
-                .Find(filter)
-                .SortBy(l => l.Timestamp)
-                .ToList();
+            var locations = _locationQueryRepository.GetRoute(serialNumber,startDate,endDate);
 
             var previousTimestamp = locations.First().Timestamp;
 
@@ -97,7 +82,7 @@ namespace NaviMente.WebApi.Infrastructure.Services
                         routes.Add(new Dto.Location.Route
                         {
                             Type = "LineString",
-                            Coordinates = new List<List<double>>(currentCoordinates)
+                            Coordinates = [.. currentCoordinates]
                         });
                         currentCoordinates.Clear();
                     }

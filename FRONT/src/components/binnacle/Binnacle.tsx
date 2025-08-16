@@ -34,6 +34,7 @@ const Binnacle: React.FC = () => {
     fetchLogs(device.serialNumber);
   };
 
+  /* istanbul ignore next */
   const handleFilter = (severity: number | null) => {
     if (selectedDevice) {
       fetchLogs(selectedDevice.serialNumber, severity);

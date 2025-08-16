@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Hellang.Middleware.ProblemDetails;
-using Microsoft.Data.SqlClient;
-using NaviMente.WebApi.Infrastructure.Persistence;
+﻿using Hellang.Middleware.ProblemDetails;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using NaviMente.WebApi.Infrastructure.Persistence;
+using NaviMente.WebApi.Infrastructure.Persistence.Repositories;
+using NaviMente.WebApi.Infrastructure.Persistence.Repositories.Query;
 using NaviMente.WebApi.Infrastructure.Services;
 
 namespace NaviMente.WebApi
@@ -52,8 +54,18 @@ namespace NaviMente.WebApi
         {
             string? connectionString = configuration.GetConnectionString("Default") ?? throw new ArgumentException("Cadena de conexión no encontrada en la configuración", nameof(configuration));
 
-            services.AddDbContext<ApplicationContext>();
-            services.AddScoped<UserService>();
+            services.AddScoped<IApplicationContext, ApplicationContext>();
+            services.AddScoped<IUserQueryRepository, UserQueryRepository>();
+            services.AddScoped<IDeviceQueryRepository, DeviceQueryRepository>();
+            services.AddScoped<ICodeQueryRepository ,CodeQueryRepository>();
+            services.AddScoped<ILogQueryRepository, LogQueryRepository>();
+            services.AddScoped<ILocationQueryRepository, LocationQueryRepository>();
+            services.AddScoped<IRestrictedZoneQueryRepository, RestrictedZoneQueryRepository>();
+            services.AddScoped<ICounterQueryRepository, CounterQueryRepository>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IBinnacleService, BinnacleService>();
+            services.AddScoped<IDeviceService, DeviceService>();
+            services.AddScoped<ILocationService, LocationService>();
 
             return services;
         }

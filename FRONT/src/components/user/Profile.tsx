@@ -9,6 +9,7 @@ import deleteIcon from '../../assets/delete.png';
 import { useApi } from '../../shared/hooks/useApi';
 import { AddPhone, RemovePhone, EditEmail, EditMainPhone, GenerateTelegramCode, GetUser, UnlinkTelegram } from '../../api/authApi';
 import { GetDevices, UnassignDevice, RegisterDevice } from '../../api/deviceApi';
+import React from 'react';
 
 type User = {
     userId: number;
@@ -34,8 +35,6 @@ export default function Profile() {
     const [selectedDevice, setSelectedDevice] = useState("");
     const [showAddPhone, setShowAddPhone] = useState(false);
     const [newPhone, setNewPhone] = useState("");
-    const [showAddDevice, setShowAddDevice] = useState(false);
-    const [newDevice, setNewDevice] = useState("");
     const [telegramCode, setTelegramCode] = useState<number>();
     const [showTelegramInstructions, setShowTelegramInstructions] = useState(false);
     const [editingEmail, setEditingEmail] = useState(false);
@@ -75,7 +74,7 @@ export default function Profile() {
     }, [username]);
 
     const addAdditionalPhone = () => {
-        if (user != null) {
+        if (user != null && username != null) {
             callApi(AddPhone(username, newPhone)).then((result: any) => {
                 const parsedUser: User = {
                     userId: result.userId,
@@ -93,7 +92,7 @@ export default function Profile() {
     };
 
     const removePhone = (phoneNumber: string) => {
-        if (user) {
+        if (user && username != null) {
             callApi(RemovePhone(username, phoneNumber)).then((result: any) => {
                 const updatedUser: User = {
                     userId: result.userId,
@@ -135,7 +134,7 @@ export default function Profile() {
     };
 
     const editEmail = (newEmail: string) => {
-        if (user != null) {
+        if (user != null && username != null) {
             callApi(EditEmail(username, newEmail)).then(() => {
                 window.location.reload();
             });
@@ -143,7 +142,7 @@ export default function Profile() {
     };
 
     const editMainPhone = (newPhone: string) => {
-        if (user != null) {
+        if (user != null && username != null) {
             callApi(EditMainPhone(username, newPhone)).then(() => {
                 window.location.reload();
             });

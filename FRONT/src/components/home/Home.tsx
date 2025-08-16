@@ -2,9 +2,6 @@ import React from "react";
 import mapImage from "../../assets/logo.png";
 import chatIcon from '../../assets/chat.png';
 import mapIcon from '../../assets/map.png';
-import faceIcon from '../../assets/facebook.png';
-import InstaIcon from '../../assets/instagram.png';
-import XIcon from '../../assets/x.png';
 import { useNavigate } from "react-router-dom";
 import Footer from "../layout/Footer";
 

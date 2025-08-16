@@ -11,15 +11,13 @@ namespace NaviMente.WebApi.Controllers
     [AllowAnonymous]
     public class LocationController : ControllerBase
     {
-        private readonly IConfiguration _config;
         private readonly ILogger<LocationController> _logger;
-        private readonly LocationService _locationService;
+        private readonly ILocationService _locationService;
 
-        public LocationController(IConfiguration configuration, ILogger<LocationController> logger, ApplicationContext dbContext)
+        public LocationController(ILogger<LocationController> logger, ILocationService locationService)
         {
-            _config = configuration;
             _logger = logger;
-            _locationService = new LocationService(dbContext, logger);
+            _locationService = locationService;
         }
 
         [HttpPost()]

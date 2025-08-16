@@ -1,7 +1,7 @@
 import React from "react";
 import logo from '../../assets/logoNavBar.png';
 
-export default function Header({navigateTo}) {
+export default function Header({navigateTo}: any) {
   const username = localStorage.getItem("userName");
 
   const handleLogout = (event: any) => {

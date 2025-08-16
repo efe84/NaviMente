@@ -7,7 +7,6 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
     public class Location
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId? Id { get; set; }
 
         [BsonElement("serialNumber")]

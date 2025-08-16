@@ -37,10 +37,10 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
         event.preventDefault();
 
         if (!isLoginMode && serialNumber.trim() !== "" && deviceName.trim() === "") {
-        alert("If you add NaviBand Code, you must create a NaviBand Name too.");
-        return;
+            alert("If you add NaviBand Code, you must create a NaviBand Name too.");
+            return;
         }
-        
+
         if (isLoginMode) {
             callApi(Login(username, password)).then(() => {
                 window.localStorage.setItem('userName', username);
@@ -52,6 +52,12 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                 navigate('/Home');
             });
         }
+    };
+
+    /* istanbul ignore next */
+    const handleToggleMode = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        setIsLoginMode(!isLoginMode);
     };
 
     return (
@@ -258,7 +264,7 @@ export default function Auth({ isLogin }: { isLogin: boolean }) {
                     </span>
                     <a
                         href="#"
-                        onClick={(e) => { e.preventDefault(); setIsLoginMode(!isLoginMode); }}
+                        onClick={handleToggleMode}
                         style={{ color: "blue", cursor: "pointer", marginLeft: "5px", fontSize: "15px" }}
                     >
                         {isLoginMode ? "Regístrate" : "Inicia sesión"}

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using NaviMente.WebApi.Infrastructure.Persistence;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Enums;
 using NaviMente.WebApi.Dto.User;
@@ -16,15 +15,13 @@ namespace NaviMente.WebApi.Controllers
     [AllowAnonymous]
     public class UserController : ControllerBase
     {
-        private readonly IConfiguration _config;
         private readonly ILogger<UserController> _logger;
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
-        public UserController(IConfiguration configuration, ILogger<UserController> logger, ApplicationContext dbContext)
+        public UserController(ILogger<UserController> logger, IUserService userService)
         {
-            _config = configuration;
             _logger = logger;
-            _userService = new UserService(dbContext, logger);
+            _userService = userService;
         }
 
         /// <summary>
@@ -33,12 +30,15 @@ namespace NaviMente.WebApi.Controllers
         /// <param name="userRegister">Username, email, contraseña y numero de telefono</param>
         /// <returns></returns>
         [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] UserRegisterDTO userRegister)
+        public IActionResult Register([FromBody] UserRegisterDTO userRegister)
         {
             try
             {
-                await _userService.CreateUserAsync(userRegister);
-                return Ok();
+                var userId = _userService.CreateUser(userRegister);
+                if (userId == 0)
+                    return BadRequest("Error al crear nuevo usuario");
+
+                return Ok(userId);
             }
             catch (Exception ex)
             {
@@ -48,11 +48,11 @@ namespace NaviMente.WebApi.Controllers
         }
 
         [HttpGet()]
-        public async Task<IActionResult> GetUser([FromQuery] string username)
+        public IActionResult GetUser([FromQuery] string username)
         {
             try
             {
-                User user = await _userService.GetUserInfo(username);
+                User user = _userService.GetUser(username);
                 return Ok(user);
             }
             catch (Exception ex)
@@ -116,13 +116,15 @@ namespace NaviMente.WebApi.Controllers
 
 
         [HttpPut("EditEmail")]
-        public async Task<IActionResult> EditEmail([FromBody] string newEmail, [FromQuery] string username)
+        public IActionResult EditEmail([FromBody] NewEmailDTO newEmail, [FromQuery] string username)
         {
             try
             {
                 _logger.LogInformation("Actualizando el correo del usuario {userName}", username);
-                await _userService.EditEmail(username, newEmail);
-                return Ok();
+                User? user = _userService.EditEmail(username, newEmail.NewEmail);
+                if (user == null)
+                    return BadRequest("Error editando email del usuario");
+                return Ok(user);
             }
             catch (Exception ex)
             {
@@ -132,13 +134,15 @@ namespace NaviMente.WebApi.Controllers
         }
 
         [HttpPut("EditMainPhone")]
-        public async Task<IActionResult> EditMainPhone([FromBody] string newMainPhone, [FromQuery] string username)
+        public async Task<IActionResult> EditMainPhone([FromBody] NewMainPhoneDTO newMainPhone, [FromQuery] string username)
         {
             try
             {
                 _logger.LogInformation("Actualizando el telefono principal del usuario {userName}", username);
-                await _userService.EditMainPhone(username, newMainPhone);
-                return Ok();
+                User? user = _userService.EditMainPhone(username, newMainPhone.NewMainPhone);
+                if (user == null)
+                    return BadRequest("Error editando teléfono principal del usuario");
+                return Ok(user);
             }
             catch (Exception ex)
             {
@@ -148,56 +152,58 @@ namespace NaviMente.WebApi.Controllers
         }
 
         [HttpPost("AddPhone")]
-        public async Task<IActionResult> AddPhone([FromQuery] string username, [FromBody] string newPhone)
+        public IActionResult AddPhone([FromQuery] string username, [FromBody] NewPhoneDTO newPhone)
         {
             try
             {
-                _logger.LogInformation("Actualizando el telefono principal del usuario {username}", username);
-                User userAct = await _userService.AddPhone(username, newPhone);
-                return Ok(userAct);
+                _logger.LogInformation("Añadiendo telefono al usuario {username}", username);
+                User? user = _userService.AddPhone(username, newPhone.NewPhone);
+                if (user == null)
+                    return BadRequest("Error añadiendo teléfono al usuario");
+                return Ok(user);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error actualizando el telefono principal del usuario {username}", username);
+                _logger.LogError(ex, "Error añadiendo telefono al usuario {username}", username);
                 return BadRequest();
             }
         }
 
         [HttpDelete("DeletePhone")]
-        public async Task<IActionResult> DeletePhone([FromQuery] string username, [FromQuery] string phoneNumber)
+        public IActionResult DeletePhone([FromQuery] string username, [FromQuery] string phoneNumber)
         {
             try
             {
-                _logger.LogInformation("Actualizando el telefono principal del usuario {username}", username);
-                User userAct = await _userService.RemovePhone(username, phoneNumber);
-                return Ok(userAct);
+                _logger.LogInformation("Eliminando telefono del usuario {username}", username);
+                User? user = _userService.RemovePhone(username, phoneNumber);
+                if (user == null)
+                    return BadRequest("Error eliminando teléfono al usuario");
+                return Ok(user);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error actualizando el telefono principal del usuario {userId}", username);
+                _logger.LogError(ex, "Error eliminando el telefono al usuario {username}", username);
                 return BadRequest();
             }
         }
 
         [HttpPost("GenerateCode")]
-        public async Task<IActionResult> GenerateCode([FromQuery] string userId)
+        public IActionResult GenerateCode([FromQuery] string userId)
         {
             if (string.IsNullOrEmpty(userId))
                 return BadRequest("Invalid user ID");
 
-            string code = await _userService.GenerateLinkCode(userId);
-
+            string code = _userService.GenerateLinkCode(userId);
             return Ok(new { code });
         }
 
         [HttpPut("UnlinkTelegram")]
-        public async Task<IActionResult> UnlinkTelegram([FromQuery] string userId)
+        public IActionResult UnlinkTelegram([FromQuery] string userId)
         {
             if (string.IsNullOrEmpty(userId))
                 return BadRequest("Invalid user ID");
 
-            await _userService.UnlinkTelegram(userId);
-
+            _userService.UnlinkTelegram(userId);
             return Ok();
         }
     }

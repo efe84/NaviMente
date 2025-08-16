@@ -8,9 +8,6 @@ using Serilog.Exceptions;
 using Serilog.Enrichers.Span;
 using Prometheus;
 using NaviMente.WebApi;
-using NaviMente.WebApi.Infrastructure.Persistence;
-using NaviMente.WebApi.BackgroundServices;
-using Microsoft.EntityFrameworkCore;
 using NaviMente.WebApi.Middlewares;
 
 var configuration = new ConfigurationBuilder()
@@ -38,7 +35,6 @@ try
     });
 
     builder.Services.AddErrorHandling();
-    builder.Services.AddDbContext<ApplicationContext>();
 
     builder.Services.AddControllers();
 
@@ -48,11 +44,9 @@ try
 
     builder.Services.AddAuthSchemas();
     builder.Services.AddInfrastructureServices(builder.Configuration);
-    builder.Services.AddHostedService<EmailSenderBackgroundService>();
 
     builder.Services
         .AddHealthChecks()
-        .AddDbContextCheck<ApplicationContext>()
         .AddCheck<CustomHealthCheck>(nameof(CustomHealthCheck));
 
     builder.Services.AddHttpLogging(logging =>

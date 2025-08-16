@@ -7,14 +7,12 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
     public class LogLine
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
         public ObjectId? Id { get; set; }
 
         [BsonElement("serialNumber")]
         public required string SerialNumber { get; set; }
 
         [BsonElement("timestamp")]
-        [BsonRepresentation(BsonType.DateTime)]
         public DateTime Timestamp { get; set; }
 
         [BsonElement("severity")]
