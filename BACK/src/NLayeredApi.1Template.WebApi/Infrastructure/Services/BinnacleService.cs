@@ -1,38 +1,28 @@
-﻿using MongoDB.Driver;
-using NaviMente.WebApi.Controllers;
+﻿using NaviMente.WebApi.Controllers;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.Binnacle;
-using NaviMente.WebApi.Infrastructure.Persistence;
+using NaviMente.WebApi.Infrastructure.Persistence.Repositories;
 
 namespace NaviMente.WebApi.Infrastructure.Services
 {
-    public class BinnacleService
+    public class BinnacleService: IBinnacleService
     {
-        private readonly IMongoCollection<LogLine> _logsCollection;
+        private readonly ILogQueryRepository _logQueryRepository;
         private readonly ILogger<BinnacleController> _logger;
 
-        public BinnacleService(ApplicationContext dbContext, ILogger<BinnacleController> logger)
+        public BinnacleService(ILogger<BinnacleController> logger, ILogQueryRepository logQueryRepository)
         {
-            _logsCollection = dbContext.Logs;
+            _logQueryRepository = logQueryRepository;
             _logger = logger;
         }
 
-        public async Task<List<LogLineDTO>> GetDeviceLogsAsync(string serialNumber, int? severity)
+        public List<LogLineDTO> GetDeviceLogs(string serialNumber, int? severity)
         {
-            var filter = Builders<LogLine>.Filter.Eq(l => l.SerialNumber, serialNumber);
+            _logger.LogInformation("Recuperando logs del dispositivo {serialNumber}", serialNumber);
 
-            if (severity.HasValue)
-            {
-                var severityFilter = Builders<LogLine>.Filter.Eq(l => l.Severity, severity.Value);
-                filter = Builders<LogLine>.Filter.And(filter, severityFilter);
-            }
+            List<LogLine> logs = _logQueryRepository.GetBySerialNumberAndSeverity(serialNumber, severity);
 
-            List<LogLine> logs = await _logsCollection
-                .Find(filter)
-                .SortBy(l => l.Timestamp)
-                .ToListAsync();
-
-            List<LogLineDTO> result = new List<LogLineDTO>();
+            List<LogLineDTO> result = [];
             foreach (LogLine log in logs)
             {
                 result.Add(new LogLineDTO

@@ -9,6 +9,7 @@ import deleteIcon from '../../assets/delete.png';
 import { useApi } from '../../shared/hooks/useApi';
 import { AddPhone, RemovePhone, EditEmail, EditMainPhone, GenerateTelegramCode, GetUser, UnlinkTelegram } from '../../api/authApi';
 import { GetDevices, UnassignDevice, RegisterDevice } from '../../api/deviceApi';
+import React from 'react';
 
 type User = {
     userId: number;
@@ -34,8 +35,6 @@ export default function Profile() {
     const [selectedDevice, setSelectedDevice] = useState("");
     const [showAddPhone, setShowAddPhone] = useState(false);
     const [newPhone, setNewPhone] = useState("");
-    const [showAddDevice, setShowAddDevice] = useState(false);
-    const [newDevice, setNewDevice] = useState("");
     const [telegramCode, setTelegramCode] = useState<number>();
     const [showTelegramInstructions, setShowTelegramInstructions] = useState(false);
     const [editingEmail, setEditingEmail] = useState(false);
@@ -75,7 +74,7 @@ export default function Profile() {
     }, [username]);
 
     const addAdditionalPhone = () => {
-        if (user != null) {
+        if (user != null && username != null) {
             callApi(AddPhone(username, newPhone)).then((result: any) => {
                 const parsedUser: User = {
                     userId: result.userId,
@@ -93,7 +92,7 @@ export default function Profile() {
     };
 
     const removePhone = (phoneNumber: string) => {
-        if (user) {
+        if (user && username != null) {
             callApi(RemovePhone(username, phoneNumber)).then((result: any) => {
                 const updatedUser: User = {
                     userId: result.userId,
@@ -135,7 +134,7 @@ export default function Profile() {
     };
 
     const editEmail = (newEmail: string) => {
-        if (user != null) {
+        if (user != null && username != null) {
             callApi(EditEmail(username, newEmail)).then(() => {
                 window.location.reload();
             });
@@ -143,7 +142,7 @@ export default function Profile() {
     };
 
     const editMainPhone = (newPhone: string) => {
-        if (user != null) {
+        if (user != null && username != null) {
             callApi(EditMainPhone(username, newPhone)).then(() => {
                 window.location.reload();
             });
@@ -191,210 +190,145 @@ export default function Profile() {
     };
 
     return (
-        <div style={{ width: '100vw', fontFamily: 'Arial, sans-serif', color: '#333', backgroundColor: '#fafafa', padding: '20px 0' }}>
-            <div style={{ display: 'flex', marginLeft: '50px', paddingTop: '20px', alignItems: 'center', marginBottom: '20px' }}>
-                <div style={{ marginRight: '20px' }}>
-                    <img src={image} style={{ height: "90px" }} />
+        <>
+            <div style={{ width: '100vw', fontFamily: 'Arial, sans-serif', color: '#333', backgroundColor: '#fafafa', minHeight: 'calc(100vh - 150px)' }}>
+                <div style={{ display: 'flex', marginLeft: '50px', paddingTop: '20px', alignItems: 'center', marginBottom: '20px' }}>
+                    <div style={{ marginRight: '20px' }}>
+                        <img src={image} style={{ height: "90px" }} />
+                    </div>
+                    <div>
+                        <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', }}>{user?.username}</h1>
+                        <p style={{ margin: 0, fontSize: '16px', color: '#777', }}>User's Profile</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', }}>{user?.username}</h1>
-                    <p style={{ margin: 0, fontSize: '16px', color: '#777', }}>User's Profile</p>
-                </div>
-            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'row', margin: '0 50px' }}>
-                <div style={{ flex: 1, marginRight: '20px' }}>
-                    <div style={{ marginBottom: '20px', padding: '20px' }}>
-                        <h3>User Information</h3>
-                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
-                            <strong style={{ marginRight: '10px' }}>Email: </strong>
-                            {editingEmail ? (
-                                <input
-                                    type="text"
-                                    value={newEmail}
-                                    onChange={(e) => setNewEmail(e.target.value)}
-                                    style={{
-                                        padding: '5px 10px',
-                                        fontSize: '14px',
-                                        border: '1px solid #ddd',
-                                        borderRadius: '5px',
-                                        width: '250px',
-                                        marginRight: '10px'
-                                    }}
-                                />
-                            ) : (
-                                <span style={{ marginRight: '10px' }}>{user?.email}</span>
-                            )}
-                            <img
-                                src={editingEmail ? linked : edit}
-                                alt={editingEmail ? "Save Email" : "Edit Email"}
-                                style={{ width: '20px', height: '20px', cursor: 'pointer' }}
-                                onClick={() => {
-                                    if (editingEmail) {
-                                        if (newEmail.trim()) {
-                                            editEmail(newEmail);
-                                            setEditingEmail(false);
-                                        }
-                                    } else {
-                                        setNewEmail(user?.email || "");
-                                        setEditingEmail(true);
-                                    }
-                                }}
-                            />
-                        </div>
-                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
-                            <strong style={{ marginRight: '10px' }}>Main Phone: </strong>
-                            {editingMainPhone ? (
-                                <input
-                                    type="text"
-                                    value={newMainPhone}
-                                    onChange={(e) => setNewMainPhone(e.target.value)}
-                                    style={{
-                                        padding: '5px 10px',
-                                        fontSize: '14px',
-                                        border: '1px solid #ddd',
-                                        borderRadius: '5px',
-                                        width: '200px',
-                                        marginRight: '10px'
-                                    }}
-                                />
-                            ) : (
-                                <span style={{ marginRight: '10px' }}>{user?.mainPhone}</span>
-                            )}
-                            <img
-                                src={editingMainPhone ? linked : edit}
-                                alt={editingMainPhone ? "Save Main Phone" : "Edit Main Phone"}
-                                style={{ width: '20px', height: '20px', cursor: 'pointer' }}
-                                onClick={() => {
-                                    if (editingMainPhone) {
-                                        if (newMainPhone.trim()) {
-                                            editMainPhone(newMainPhone);
-                                        }
-                                        setEditingMainPhone(false);
-                                    } else {
-                                        setNewMainPhone(user?.mainPhone || "");
-                                        setEditingMainPhone(true);
-                                    }
-                                }}
-                            />
-                        </div>
-                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
-                            <strong>Additional Phones: </strong>
-                            <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
-                                {user?.otherPhones.map((phone, index) => (
-                                    <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start', marginBottom: '5px' }}>
-                                        <span>- {phone}</span>
-                                        <img
-                                            src={deleteIcon}
-                                            alt="Delete Phone"
-                                            style={{ width: '16px', height: '16px', cursor: 'pointer', marginLeft: '10px' }}
-                                            onClick={() => removePhone(phone)}
-                                        />
-                                    </li>
-                                ))}
-                            </ul>
-                            <div style={{ marginTop: "5px" }}>
-                                <img
-                                    src={add}
-                                    alt="Add Phone"
-                                    style={{ width: '32px', height: '32px', cursor: 'pointer' }}
-                                    onClick={() => setShowAddPhone(!showAddPhone)}
-                                />
-                                {showAddPhone && (
+                <div style={{ display: 'flex', flexDirection: 'row', margin: '0 50px' }}>
+                    <div style={{ flex: 1, marginRight: '20px' }}>
+                        <div style={{ marginBottom: '20px', padding: '20px' }}>
+                            <h3>User Information</h3>
+                            <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
+                                <strong style={{ marginRight: '10px' }}>Email: </strong>
+                                {editingEmail ? (
                                     <input
                                         type="text"
-                                        placeholder="Enter new phone"
-                                        value={newPhone}
-                                        onChange={(e) => setNewPhone(e.target.value)}
+                                        value={newEmail}
+                                        onChange={(e) => setNewEmail(e.target.value)}
                                         style={{
-                                            marginLeft: '10px',
-                                            padding: '10px',
+                                            padding: '5px 10px',
                                             fontSize: '14px',
                                             border: '1px solid #ddd',
-                                            borderRadius: '8px',
-                                            width: '200px',
-                                            outline: 'none',
-                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                            borderRadius: '5px',
+                                            width: '250px',
+                                            marginRight: '10px'
                                         }}
                                     />
+                                ) : (
+                                    <span style={{ marginRight: '10px' }}>{user?.email}</span>
                                 )}
-                                {showAddPhone && (
-                                    <button
-                                        onClick={() => {
-                                            if (newPhone.trim()) {
-                                                addAdditionalPhone();
-                                                setNewPhone('');
-                                                setShowAddPhone(false);
-                                            }
-                                        }}
-                                        style={{
-                                            marginLeft: '10px',
-                                            padding: '10px 15px',
-                                            fontSize: '14px',
-                                            backgroundColor: '#DFDFDF',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                        }}
-                                    >
-                                        Add
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
-                            <strong>Devices:</strong>
-                            <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
-                                {user?.devices.map((device) => (
-                                    <li key={device.serialNumber}> - {device.name}</li>
-                                ))}
-                            </ul>
-                            <div style={{ marginTop: "5px" }}>
                                 <img
-                                    src={add}
-                                    alt="Add Device"
-                                    style={{ width: '32px', height: '32px', cursor: 'pointer' }}
-                                    onClick={() => setShowAddDeviceForm(!showAddDeviceForm)}
+                                    src={editingEmail ? linked : edit}
+                                    alt={editingEmail ? "Save Email" : "Edit Email"}
+                                    style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                    onClick={() => {
+                                        if (editingEmail) {
+                                            if (newEmail.trim()) {
+                                                editEmail(newEmail);
+                                                setEditingEmail(false);
+                                            }
+                                        } else {
+                                            setNewEmail(user?.email || "");
+                                            setEditingEmail(true);
+                                        }
+                                    }}
                                 />
-                                {showAddDeviceForm && (
-                                    <div style={{ marginTop: '10px' }}>
+                            </div>
+                            <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center' }}>
+                                <strong style={{ marginRight: '10px' }}>Main Phone: </strong>
+                                {editingMainPhone ? (
+                                    <input
+                                        type="text"
+                                        value={newMainPhone}
+                                        onChange={(e) => setNewMainPhone(e.target.value)}
+                                        style={{
+                                            padding: '5px 10px',
+                                            fontSize: '14px',
+                                            border: '1px solid #ddd',
+                                            borderRadius: '5px',
+                                            width: '200px',
+                                            marginRight: '10px'
+                                        }}
+                                    />
+                                ) : (
+                                    <span style={{ marginRight: '10px' }}>{user?.mainPhone}</span>
+                                )}
+                                <img
+                                    src={editingMainPhone ? linked : edit}
+                                    alt={editingMainPhone ? "Save Main Phone" : "Edit Main Phone"}
+                                    style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                                    onClick={() => {
+                                        if (editingMainPhone) {
+                                            if (newMainPhone.trim()) {
+                                                editMainPhone(newMainPhone);
+                                            }
+                                            setEditingMainPhone(false);
+                                        } else {
+                                            setNewMainPhone(user?.mainPhone || "");
+                                            setEditingMainPhone(true);
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
+                                <strong>Additional Phones: </strong>
+                                <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
+                                    {user?.otherPhones.map((phone, index) => (
+                                        <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start', marginBottom: '5px' }}>
+                                            <span>- {phone}</span>
+                                            <img
+                                                src={deleteIcon}
+                                                alt="Delete Phone"
+                                                style={{ width: '16px', height: '16px', cursor: 'pointer', marginLeft: '10px' }}
+                                                onClick={() => removePhone(phone)}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div style={{ marginTop: "5px" }}>
+                                    <img
+                                        src={add}
+                                        alt="Add Phone"
+                                        style={{ width: '32px', height: '32px', cursor: 'pointer' }}
+                                        onClick={() => setShowAddPhone(!showAddPhone)}
+                                    />
+                                    {showAddPhone && (
                                         <input
                                             type="text"
-                                            placeholder="Device Name"
-                                            value={newDeviceName}
-                                            onChange={(e) => setNewDeviceName(e.target.value)}
+                                            placeholder="Enter new phone"
+                                            value={newPhone}
+                                            onChange={(e) => setNewPhone(e.target.value)}
                                             style={{
+                                                marginLeft: '10px',
                                                 padding: '10px',
                                                 fontSize: '14px',
                                                 border: '1px solid #ddd',
                                                 borderRadius: '8px',
                                                 width: '200px',
-                                                marginRight: '10px'
+                                                outline: 'none',
+                                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                                             }}
                                         />
-                                        <input
-                                            type="text"
-                                            placeholder="Serial Number"
-                                            value={newSerialNumber}
-                                            onChange={(e) => setNewSerialNumber(e.target.value)}
-                                            style={{
-                                                padding: '10px',
-                                                fontSize: '14px',
-                                                border: '1px solid #ddd',
-                                                borderRadius: '8px',
-                                                width: '200px',
-                                                marginRight: '10px'
-                                            }}
-                                        />
+                                    )}
+                                    {showAddPhone && (
                                         <button
                                             onClick={() => {
-                                                registerDevice();
-                                                setShowAddDeviceForm(false);
-                                                setNewDeviceName("");
-                                                setNewSerialNumber("");
+                                                if (newPhone.trim()) {
+                                                    addAdditionalPhone();
+                                                    setNewPhone('');
+                                                    setShowAddPhone(false);
+                                                }
                                             }}
                                             style={{
+                                                marginLeft: '10px',
                                                 padding: '10px 15px',
                                                 fontSize: '14px',
                                                 backgroundColor: '#DFDFDF',
@@ -404,112 +338,179 @@ export default function Profile() {
                                                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                                             }}
                                         >
-                                            Save
+                                            Add
                                         </button>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
+                            </div>
+                            <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
+                                <strong>Devices:</strong>
+                                <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
+                                    {user?.devices.map((device) => (
+                                        <li key={device.serialNumber}> - {device.name}</li>
+                                    ))}
+                                </ul>
+                                <div style={{ marginTop: "5px" }}>
+                                    <img
+                                        src={add}
+                                        alt="Add Device"
+                                        style={{ width: '32px', height: '32px', cursor: 'pointer' }}
+                                        onClick={() => setShowAddDeviceForm(!showAddDeviceForm)}
+                                    />
+                                    {showAddDeviceForm && (
+                                        <div style={{ marginTop: '10px' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Device Name"
+                                                value={newDeviceName}
+                                                onChange={(e) => setNewDeviceName(e.target.value)}
+                                                style={{
+                                                    padding: '10px',
+                                                    fontSize: '14px',
+                                                    border: '1px solid #ddd',
+                                                    borderRadius: '8px',
+                                                    width: '200px',
+                                                    marginRight: '10px'
+                                                }}
+                                            />
+                                            <input
+                                                type="text"
+                                                placeholder="Serial Number"
+                                                value={newSerialNumber}
+                                                onChange={(e) => setNewSerialNumber(e.target.value)}
+                                                style={{
+                                                    padding: '10px',
+                                                    fontSize: '14px',
+                                                    border: '1px solid #ddd',
+                                                    borderRadius: '8px',
+                                                    width: '200px',
+                                                    marginRight: '10px'
+                                                }}
+                                            />
+                                            <button
+                                                onClick={() => {
+                                                    registerDevice();
+                                                    setShowAddDeviceForm(false);
+                                                    setNewDeviceName("");
+                                                    setNewSerialNumber("");
+                                                }}
+                                                style={{
+                                                    padding: '10px 15px',
+                                                    fontSize: '14px',
+                                                    backgroundColor: '#DFDFDF',
+                                                    border: 'none',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                                }}
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div style={{ flex: 1, marginRight: '20px' }}>
-                    <div style={{ marginBottom: '20px', padding: '20px' }}>
-                        <h3>Unlink a Device</h3>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                            <select
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    fontSize: '16px',
-                                    borderRadius: '5px',
-                                    border: '1px solid #ddd'
-                                }}
-                                value={selectedDevice}
-                                onChange={(e) => setSelectedDevice(e.target.value)}
-                            >
-                                {user?.devices.map((device) => (
-                                    <option key={device.serialNumber} value={device.serialNumber}>
-                                        {device.name}
-                                    </option>
-                                ))}
-                            </select>
+                    <div style={{ flex: 1, marginRight: '20px' }}>
+                        <div style={{ marginBottom: '20px', padding: '20px' }}>
+                            <h3>Unlink a Device</h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+                                <select
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        fontSize: '16px',
+                                        borderRadius: '5px',
+                                        border: '1px solid #ddd'
+                                    }}
+                                    value={selectedDevice}
+                                    onChange={(e) => setSelectedDevice(e.target.value)}
+                                >
+                                    {user?.devices.map((device) => (
+                                        <option key={device.serialNumber} value={device.serialNumber}>
+                                            {device.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm(`Are you sure you want to remove the device?`)) {
+                                            unlinkDevice();
+                                            setSelectedDevice('');
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '10px 15px',
+                                        fontSize: '14px',
+                                        backgroundColor: '#DFDFDF',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                    }}
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                        <div style={{ marginBottom: '20px', padding: '20px' }}>
+                            <h3>Security Settings</h3>
+                            <p>Control access to Telegram integration.</p>
                             <button
-                                onClick={() => {
-                                    if (window.confirm(`Are you sure you want to remove the device?`)) {
-                                        unlinkDevice();
-                                        setSelectedDevice('');
-                                    }
-                                }}
                                 style={{
                                     padding: '10px 15px',
-                                    fontSize: '14px',
+                                    fontSize: '16px',
                                     backgroundColor: '#DFDFDF',
                                     border: 'none',
                                     borderRadius: '8px',
                                     cursor: 'pointer',
                                     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                                 }}
+                                onClick={() => toggleTelegramLink(user?.userId)}
                             >
-                                Remove
+                                {user?.telegramChatId != null ? 'Unlink Telegram' : 'Link Telegram'}
                             </button>
+                            {user?.telegramChatId != null ?
+                                <img src={linked} style={{ height: "30px", marginLeft: "10px" }} />
+                                :
+                                <></>
+                            }
                         </div>
+                        {showTelegramInstructions && telegramCode && (
+                            <div style={{
+                                backgroundColor: "#f1f1f1",
+                                padding: "15px",
+                                marginTop: "15px",
+                                marginLeft: "15px",
+                                borderRadius: "8px",
+                                width: "fit-content"
+                            }}>
+                                <p>
+                                    1. Click here to open the Telegram Bot:{" "}
+                                    <a href="https://t.me/NaviMente_Bot" target="_blank" rel="noopener noreferrer">
+                                        NaviMente BOT
+                                    </a>
+                                </p>
+                                <p>
+                                    2. Once open, type this message.
+                                </p>
+                                <code style={{ background: "#ddd", padding: "6px 10px", borderRadius: "5px", display: "inline-block", fontSize: "16px" }}>
+                                    /vincular {telegramCode}
+                                </code>
+                                <p>
+                                    3. After telegram confirms validation, reload the page.
+                                </p>
+                                <p style={{ marginTop: "10px", fontStyle: "italic", color: "#555" }}>
+                                    This codes expires in 10 minutes.
+                                </p>
+                            </div>
+                        )}
                     </div>
-                    <div style={{ marginBottom: '20px', padding: '20px' }}>
-                        <h3>Security Settings</h3>
-                        <p>Control access to Telegram integration.</p>
-                        <button
-                            style={{
-                                padding: '10px 15px',
-                                fontSize: '16px',
-                                backgroundColor: '#DFDFDF',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                            }}
-                            onClick={() => toggleTelegramLink(user?.userId)}
-                        >
-                            {user?.telegramChatId != null ? 'Unlink Telegram' : 'Link Telegram'}
-                        </button>
-                        {user?.telegramChatId != null ?
-                            <img src={linked} style={{ height: "30px", marginLeft: "10px" }} />
-                            :
-                            <></>
-                        }
-                    </div>
-                    {showTelegramInstructions && telegramCode && (
-                        <div style={{
-                            backgroundColor: "#f1f1f1",
-                            padding: "15px",
-                            marginTop: "15px",
-                            marginLeft: "15px",
-                            borderRadius: "8px",
-                            width: "fit-content"
-                        }}>
-                            <p>
-                                1. Click here to open the Telegram Bot:{" "}
-                                <a href="https://t.me/NaviMente_Bot" target="_blank" rel="noopener noreferrer">
-                                    NaviMente BOT
-                                </a>
-                            </p>
-                            <p>
-                                2. Once open, type this message.
-                            </p>
-                            <code style={{ background: "#ddd", padding: "6px 10px", borderRadius: "5px", display: "inline-block", fontSize: "16px" }}>
-                                /vincular {telegramCode}
-                            </code>
-                            <p>
-                                3. After telegram confirms validation, reload the page.
-                            </p>
-                            <p style={{ marginTop: "10px", fontStyle: "italic", color: "#555" }}>
-                                This codes expires in 10 minutes.
-                            </p>
-                        </div>
-                    )}
                 </div>
             </div>
             <Footer />
-        </div>
+        </>
     );
 };

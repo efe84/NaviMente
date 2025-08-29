@@ -4,8 +4,12 @@ export function Zones(serialNumber: string) {
     return {url: `/Device/Zones?serialNumber=${serialNumber}`, method: ApiMethod.GET};
 };
 
-export function BlockZone(payload: { serialNumber: string; shapes: ({ type: string; coordinates: number[][][]; } | null) []; }) {
+export function BlockZone(payload: { serialNumber: string; shapes: any; }) {
     return {url: '/Device/BlockZone', method: ApiMethod.POST, body: payload};
+};
+
+export function DeleteZone(zoneId: string) {
+    return {url: `/Device/DeleteZone?zoneId=${zoneId}`, method: ApiMethod.DELETE};
 };
 
 export function GetDevices(userId: string) {

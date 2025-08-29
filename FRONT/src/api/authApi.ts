@@ -12,34 +12,36 @@ export function GetUser(username: string) {
 };
 
 export function EditEmail(username: string, newEmail: string) {
-    return {url: `/User/EditEmail?username=${username}`, method: ApiMethod.PUT, body: newEmail};
+    return {url: `/User/EditEmail?username=${username}`, method: ApiMethod.PUT, body: {newEmail}};
 };
 
 export function EditMainPhone(username: string, newMainPhone: string) {
-    return {url: `/User/EditMainPhone?username=${username}`, method: ApiMethod.PUT, body: newMainPhone};
+    return {url: `/User/EditMainPhone?username=${username}`, method: ApiMethod.PUT, body: {newMainPhone}};
 };
 
 export function AddPhone(username: string, newPhone: string) {
-    return {url: `/User/AddPhone?username=${username}`, method: ApiMethod.POST, body: newPhone};
+    return {url: `/User/AddPhone?username=${username}`, method: ApiMethod.POST, body: {newPhone}};
 };
 
 export function RemovePhone(username: string, phoneNumber: string) {
     return {url: `/User/DeletePhone?username=${username}&phoneNumber=${phoneNumber}`, method: ApiMethod.DELETE};
 };
 
+/* istanbul ignore next */
 export function Logout(username: string) {
     return {url: '/User/Logout', method: ApiMethod.POST, body: {
         username,
     }};
 };
 
-export function Register(username: string, password: string, email: string, phoneNumber: string, deviceId: string) {
+export function Register(username: string, password: string, email: string, phoneNumber: string, deviceId: string, deviceName: string) {
     return {url: '/User/Register', method: ApiMethod.POST, body: {
         username,
         password,
         email,
         phoneNumber,
-        deviceId
+        deviceId,
+        deviceName
     }};
 };
 

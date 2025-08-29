@@ -1,28 +1,28 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
-using NaviMente.WebApi.Controllers;
+﻿using NaviMente.WebApi.Controllers;
 using NaviMente.WebApi.Domain.Shared.Entities;
 using NaviMente.WebApi.Dto.User;
-using NaviMente.WebApi.Infrastructure.Persistence;
+using NaviMente.WebApi.Infrastructure.Persistence.Repositories;
 
 namespace NaviMente.WebApi.Infrastructure.Services
 {
-    public class UserService
+    public class UserService: IUserService
     {
-        private readonly IMongoCollection<User> _usersCollection;
-        private readonly IMongoCollection<TelegramLinkCode> _codesCollection;
+        private readonly IUserQueryRepository _userQueryRepository;
+        private readonly IDeviceQueryRepository _deviceQueryRepository;
+        private readonly ICodeQueryRepository _codeQueryRepository;
         private readonly ILogger<UserController> _logger;
 
-        public UserService(ApplicationContext dbContext, ILogger<UserController> logger)
+        public UserService(ILogger<UserController> logger, IUserQueryRepository userQueryRepository, IDeviceQueryRepository deviceQueryRepository, ICodeQueryRepository codeQueryRepository)
         {
-            _usersCollection = dbContext.Users;
-            _codesCollection = dbContext.Codes;
+            _userQueryRepository = userQueryRepository;
+            _deviceQueryRepository = deviceQueryRepository;
+            _codeQueryRepository = codeQueryRepository;
             _logger = logger;
         }
 
-        public async Task CreateUserAsync(UserRegisterDTO userRegister)
+        public long CreateUser(UserRegisterDTO userRegister)
         {
-            if (await _usersCollection.Find(u => u.Username == userRegister.Username).FirstOrDefaultAsync() != null)
+            if (_userQueryRepository.GetByUsername(userRegister.Username) != null)
                 throw new Exception("That username already exists");
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(userRegister.Password);
@@ -36,32 +36,27 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 Role = Dto.Enums.UserRolesEnum.Default
             };
 
-            await _usersCollection.InsertOneAsync(newUser);
-        }
+            _userQueryRepository.InsertUser(newUser);
 
-        public async Task<User> GetUserInfo(string username)
-        {
-            User? user = await _usersCollection.Find(u => u.Username == username).FirstOrDefaultAsync();
+            if (userRegister.SerialNumber != null)
+            {
+                if (userRegister.DeviceName != null && _deviceQueryRepository.GetBySerialNumber(userRegister.SerialNumber) != null)
+                    _deviceQueryRepository.AssignDevice(userRegister.SerialNumber, userRegister.DeviceName);
+            }
 
-            if (user == null)
-                throw new Exception($"User with username {username} not found.");
-
-            return user;
+            return _userQueryRepository.GetByUsername(userRegister.Username)?.UserId ?? 0;
         }
 
         public bool ValidatePassword(string userName, string password)
         {
             try
             {
-                var user = _usersCollection.
-                    Find(u => u.Username == userName).FirstOrDefault() ?? throw new Exception($"User not found {userName}");
-
+                User user = _userQueryRepository.GetByUsername(userName) ?? throw new Exception($"User not found {userName}");
+                
                 bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.Password);
 
                 if (!isPasswordValid)
-                {
                     return false;
-                }
 
                 return true;
             }
@@ -74,91 +69,48 @@ namespace NaviMente.WebApi.Infrastructure.Services
 
         public User GetUser(string userName)
         {
-            return _usersCollection.
-                Find(u => u.Username == userName).FirstOrDefault() ?? throw new Exception($"User not found {userName}");
+            return _userQueryRepository.GetByUsername(userName) ?? throw new Exception($"User not found {userName}");
         }
 
-        public async Task EditEmail(string username, string newEmail)
+        public User? EditEmail(string username, string newEmail)
         {
-            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
-            if (actualUser == null)
-                throw new Exception($"User to edit not found {username}");
-
-            var updateDefinition = Builders<User>.Update.Set(u => u.Email, newEmail);
-
-            var result = await _usersCollection.UpdateOneAsync(
-                u => u.Username == username,
-                updateDefinition
-            );
-
-            if (result.MatchedCount == 0)
-                throw new Exception($"Failed to update email for user: {username}");
+            _ = _userQueryRepository.GetByUsername(username) ?? throw new Exception($"User to edit not found {username}");
+            _userQueryRepository.UpdateEmail(username, newEmail);
 
             _logger.LogInformation("Succesfully edited {username}", username);
+            return _userQueryRepository.GetByUsername(username);
         }
 
-        public async Task EditMainPhone(string username, string newMainPhone)
+        public User? EditMainPhone(string username, string newMainPhone)
         {
-            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
-            if (actualUser == null)
-                throw new Exception($"User to edit not found {username}");
-
-            var updateDefinition = Builders<User>.Update.Set(u => u.MainPhone, newMainPhone);
-
-            var result = await _usersCollection.UpdateOneAsync(
-                u => u.Username == username,
-                updateDefinition
-            );
-
-            if (result.MatchedCount == 0)
-                throw new Exception($"Failed to update email for user: {username}");
+            _ = _userQueryRepository.GetByUsername(username) ?? throw new Exception($"User to edit not found {username}");
+            _userQueryRepository.UpdateMainPhone(username, newMainPhone);
 
             _logger.LogInformation("Succesfully edited {username}", username);
+            return _userQueryRepository.GetByUsername(username);
         }
 
-        public async Task<User> AddPhone(string username, string newPhoneNumber)
+        public User? AddPhone(string username, string newPhoneNumber)
         {
-            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
-            if (actualUser == null)
-                throw new Exception($"User to edit not found: {username}");
-
-            var updateDefinition = Builders<User>.Update.Push(u => u.OtherPhones, newPhoneNumber);
-
-            var result = await _usersCollection.UpdateOneAsync(
-                u => u.Username == username,
-                updateDefinition
-            );
-
-            if (result.MatchedCount == 0)
-                throw new Exception($"Failed to add phone number for user: {username}");
+            _ = _userQueryRepository.GetByUsername(username) ?? throw new Exception($"User to edit not found {username}");
+            _userQueryRepository.AddPhone(username, newPhoneNumber);
 
             _logger.LogInformation("Successfully added phone number for {username}", username);
 
-            return _usersCollection.Find(u => u.Username == username).FirstOrDefault();
+            return _userQueryRepository.GetByUsername(username);
         }
 
-        public async Task<User> RemovePhone(string username, string phoneNumber)
+        public User? RemovePhone(string username, string phoneNumber)
         {
-            User? actualUser = _usersCollection.Find(u => u.Username == username).FirstOrDefault();
-            if (actualUser == null)
-                throw new Exception($"User to edit not found: {username}");
-
-            var updateDefinition = Builders<User>.Update.Pull(u => u.OtherPhones, phoneNumber);
-
-            var result = await _usersCollection.UpdateOneAsync(
-                u => u.Username == username,
-                updateDefinition
-            );
-
-            if (result.MatchedCount == 0)
-                throw new Exception($"Failed to remove phone number for user: {username}");
+            _ = _userQueryRepository.GetByUsername(username) ?? throw new Exception($"User to edit not found {username}");
+            _userQueryRepository.RemovePhone(username, phoneNumber);
 
             _logger.LogInformation("Successfully removed phone number for {username}", username);
 
-            return _usersCollection.Find(u => u.Username == username).FirstOrDefault();
+            return _userQueryRepository.GetByUsername(username);
         }
 
-        public async Task<string> GenerateLinkCode(string userId)
+        public string GenerateLinkCode(string userId)
         {
             string code = Guid.NewGuid().ToString("N")[..6].ToUpper();
 
@@ -171,18 +123,15 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 ExpiresAt = expiresAt
             };
 
-            await _codesCollection.DeleteManyAsync(c => c.UserId == long.Parse(userId));
-            await _codesCollection.InsertOneAsync(codeEntry);
+            _codeQueryRepository.DeleteOldcodes(long.Parse(userId));
+            _codeQueryRepository.InsertCode(codeEntry);
 
             return code;
         }
 
-        public async Task UnlinkTelegram(string userId)
+        public void UnlinkTelegram(string userId)
         {
-            var filter = Builders<User>.Filter.Eq(u => u.UserId, long.Parse(userId));
-            var update = Builders<User>.Update.Set(u => u.TelegramChatId, null);
-
-            await _usersCollection.UpdateOneAsync(filter, update);
+            _userQueryRepository.UnlinkTelegram(userId);
         }
     }
 }

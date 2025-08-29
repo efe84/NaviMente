@@ -4,10 +4,11 @@ namespace NaviMente.WebApi.Dto.User
 {
     public class UserRegisterDTO
     {
-        public string? Username { get; set; }
-        public string? Email { get; set; }
-        public string? Password { get; set; }
-        public string? MainPhone { get; set; }
+        public required string Username { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public required string MainPhone { get; set; }
         public string? SerialNumber { get; set; }
+        public string? DeviceName { get; set; }
     }
 }

@@ -5,7 +5,7 @@ import Header from "./Header";
 function Layout() {
     const navigate = useNavigate();
 
-    const navigateTo = useCallback(function navigateTo(url) {
+    const navigateTo = useCallback(function navigateTo(url: any) {
         navigate(url);
     }, [navigate]);
 

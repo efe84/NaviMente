@@ -50,6 +50,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onFilter }) => {
         </button>
 
         <button
+          data-testid="filter-error"
           className="btn"
           style={buttonStyle(3)}
           onClick={() => handleAction(3)}

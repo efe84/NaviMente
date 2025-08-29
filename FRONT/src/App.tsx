@@ -4,7 +4,7 @@ import './App.css'
 import "./i18n"
 import Layout from './components/layout/Layout.tsx'
 import Home from './components/home/Home.tsx'
-import Auth from './components/user/auth.tsx';
+import Auth from './components/user/Auth';
 import ContextProvider from './shared/contexts/ContextProvider.tsx';
 import Map from './components/map/Map.tsx'
 import Profile from './components/user/Profile.tsx';

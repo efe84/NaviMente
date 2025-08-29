@@ -4,13 +4,13 @@ using NaviMente.WebApi.Domain.Shared.Entities;
 
 namespace NaviMente.WebApi.Infrastructure.Persistence
 {
-    public class ApplicationContext : DbContext
+    public class ApplicationContext: IApplicationContext
     {
         private readonly IMongoDatabase _database;
 
-        public ApplicationContext()
+        public ApplicationContext(IConfiguration configuration)
         {
-            var connectionString = "mongodb://localhost:27017";
+            var connectionString = configuration.GetConnectionString("Default") ?? "mongodb://localhost:27017";
             var client = new MongoClient(connectionString);
 
             _database = client.GetDatabase("NaviMenteDev");
