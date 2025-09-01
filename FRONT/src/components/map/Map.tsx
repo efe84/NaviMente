@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GoogleMap, useLoadScript, Circle, Rectangle, Polygon, Marker, DirectionsRenderer } from '@react-google-maps/api';
 import Footer from '../layout/Footer';
 import { useApi } from '../../shared/hooks/useApi';
 import { BlockZone, GetDevices, Zones, DeleteZone } from '../../api/deviceApi';
 import { SearchLastLocation, SearchRoute } from '../../api/locationApi';
+import _ from 'lodash';
 
 const center = {
   lat: 43.212625,
   lng: -8.691061,
 };
 
+type Base = { id: string };
 type Shape =
-  | { type: 'circle'; center: google.maps.LatLngLiteral; radius: number }
-  | { type: 'rectangle'; bounds: google.maps.LatLngBoundsLiteral }
-  | { type: 'polygon'; path: google.maps.LatLngLiteral[] };
+  | (Base & { type: 'circle'; center: google.maps.LatLngLiteral; radius: number })
+  | (Base & { type: 'rectangle'; bounds: google.maps.LatLngBoundsLiteral })
+  | (Base & { type: 'polygon'; path: google.maps.LatLngLiteral[] });
 
 type ShapeDTO =
   | { type: 'circle'; center: google.maps.LatLngLiteral; radius: number; zoneId: any }
@@ -32,6 +34,8 @@ const Map: React.FC = () => {
   const [lastPositionMarker, setLastPositionMarker] = useState<google.maps.LatLngLiteral | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [existingShapes, setExistingShapes] = useState<ShapeDTO[]>([]);
+  const polygonRefs = useRef<{ [id: string]: google.maps.Polygon }>({});
+  const makeId = () => crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
   const apiKey = 'AIzaSyAaI8czgtGYcqc046Vv-icjEsKmCVcLcb0';
   const userName = localStorage.getItem('userName');
@@ -74,6 +78,12 @@ const Map: React.FC = () => {
   /* istanbul ignore next */
   const onMapLoad = (map: google.maps.Map) => {
     mapRef.current = map;
+  };
+
+  const updateShape = (id: string, next: Partial<Shape>) => {
+    setShapes(prev =>
+      prev.map(s => (s.id === id ? { ...s, ...next } as Shape : s))
+    );
   };
 
   /* istanbul ignore next */
@@ -150,7 +160,7 @@ const Map: React.FC = () => {
     };
 
     if (drawMode === 'circle') {
-      setShapes(prev => [...prev, { type: 'circle', center: latLng, radius: 100 }]);
+      setShapes(prev => [...prev, { id: makeId(), type: 'circle', center: latLng, radius: 100 }]);
     }
 
     if (drawMode === 'rectangle') {
@@ -160,7 +170,7 @@ const Map: React.FC = () => {
         east: latLng.lng + 0.0005,
         west: latLng.lng - 0.0005,
       };
-      setShapes(prev => [...prev, { type: 'rectangle', bounds }]);
+      setShapes(prev => [...prev, { id: makeId(), type: 'rectangle', bounds }]);
     }
 
     if (drawMode === 'free' && freeDrawPoints.length < 4) {
@@ -186,7 +196,7 @@ const Map: React.FC = () => {
         />
       );
 
-      setShapes(prev => [...prev, { type: 'polygon', path: freeDrawPoints }]);
+      setShapes(prev => [...prev, { id: makeId(), type: 'polygon', path: freeDrawPoints }]);
       setFreeDrawPoints([]);
     }
     return null;
@@ -310,57 +320,130 @@ const Map: React.FC = () => {
   };
 
   /* istanbul ignore next */
-  function renderShape(shape: Shape, idx: number, onClick?: () => void) {
+  function renderShape(
+    shape: any,
+    idx: number,
+    editable: boolean,
+    onClick?: () => void
+  ) {
+    const key = shape.id ?? idx;
+
     switch (shape.type) {
-      case 'circle':
+      case "circle":
         return (
           <Circle
-            key={idx}
+            key={key}
             center={shape.center}
             radius={shape.radius}
             options={{
-              fillColor: '#f00',
+              fillColor: editable ? "#368A30" : "#f00",
               fillOpacity: 0.2,
-              strokeColor: '#f00',
+              strokeColor: editable ? "#368A30" : "#f00",
               strokeOpacity: 0.5,
               strokeWeight: 2,
-              editable: !!onClick
+              editable,
+              draggable: editable,
             }}
             onClick={onClick}
+            onLoad={(circle) => {
+              const sync = () => {
+                const center = circle.getCenter()?.toJSON();
+                const radius = circle.getRadius();
+                if (!center || typeof radius !== "number") return;
+
+                if (
+                  shape.center.lat !== center.lat ||
+                  shape.center.lng !== center.lng ||
+                  shape.radius !== radius
+                ) {
+                  updateShape(shape.id, { center, radius });
+                }
+              };
+
+              circle.addListener("dragend", sync);
+              circle.addListener("radius_changed", sync);
+            }}
           />
         );
-      case 'rectangle':
+
+      case "rectangle":
         return (
           <Rectangle
-            key={idx}
+            key={key}
             bounds={shape.bounds}
             options={{
-              fillColor: '#f00',
+              fillColor: editable ? "#368A30" : "#f00",
               fillOpacity: 0.2,
-              strokeColor: '#f00',
+              strokeColor: editable ? "#368A30" : "#f00",
               strokeOpacity: 0.5,
               strokeWeight: 2,
-              editable: !!onClick
+              editable,
+              draggable: editable,
             }}
             onClick={onClick}
+            onLoad={(rect) => {
+              const sync = () => {
+                const b = rect.getBounds();
+                if (!b) return;
+
+                const newBounds: google.maps.LatLngBoundsLiteral = {
+                  north: b.getNorthEast().lat(),
+                  east: b.getNorthEast().lng(),
+                  south: b.getSouthWest().lat(),
+                  west: b.getSouthWest().lng(),
+                };
+
+                if (
+                  shape.bounds.north !== newBounds.north ||
+                  shape.bounds.south !== newBounds.south ||
+                  shape.bounds.east !== newBounds.east ||
+                  shape.bounds.west !== newBounds.west
+                ) {
+                  updateShape(shape.id, { bounds: newBounds });
+                }
+              };
+
+              const debouncedSync = _.debounce(sync, 200);
+              rect.addListener("bounds_changed", debouncedSync);
+            }}
           />
         );
-      case 'polygon':
+
+      case "polygon":
         return (
           <Polygon
-            key={idx}
-            path={shape.path}
+            key={shape.id}
             options={{
-              fillColor: '#f00',
+              paths: shape.path,
+              fillColor: editable ? "#368A30" : "#f00",
               fillOpacity: 0.2,
-              strokeColor: '#f00',
+              strokeColor: editable ? "#368A30" : "#f00",
               strokeOpacity: 0.6,
               strokeWeight: 2,
-              editable: !!onClick
+              editable,
+              draggable: editable,
             }}
             onClick={onClick}
+            onLoad={(poly) => {
+              polygonRefs.current[shape.id] = poly;
+
+              const sync = () => {
+                const newPath = poly.getPath().getArray().map(ll => ll.toJSON());
+                updateShape(shape.id, { path: newPath });
+              };
+
+              // Debounce de 200ms
+              const debouncedSync = _.debounce(sync, 200);
+
+              const path = poly.getPath();
+              path.addListener("set_at", debouncedSync);
+              path.addListener("insert_at", debouncedSync);
+              path.addListener("remove_at", debouncedSync);
+              poly.addListener("dragend", debouncedSync);
+            }}
           />
         );
+
       default:
         return null;
     }
@@ -368,7 +451,7 @@ const Map: React.FC = () => {
 
   /* istanbul ignore next */
   function renderEditableShapes(shapes: Shape[]) {
-    return shapes.map((shape, idx) => renderShape(shape, idx));
+    return shapes.map((shape) => renderShape(shape, 0, true));
   }
 
   /* istanbul ignore next */
@@ -423,7 +506,7 @@ const Map: React.FC = () => {
           >
 
             {existingShapes.map((shape, idx) =>
-              renderShape(shape, idx, () => {
+              renderShape(shape, idx, false, () => {
                 if (activeDevice) deleteZone(shape.zoneId, activeDevice);
               })
             )}
