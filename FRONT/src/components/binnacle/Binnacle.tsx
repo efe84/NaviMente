@@ -6,12 +6,14 @@ import Footer from "../layout/Footer";
 import { GetLogs } from "../../api/binnacleApi";
 import { useApi } from "../../shared/hooks/useApi";
 import { GetDevices } from "../../api/deviceApi";
+import { GetUser } from "../../api/authApi";
 
 const Binnacle: React.FC = () => {
   const callApi = useApi();
   const [devices, setDevices] = useState<{ serialNumber: string; name: string }[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<{ serialNumber: string; name: string } | null>(null);
+  const userName = localStorage.getItem('userName');
 
   const fetchLogs = (serialNumber: string, severity?: number | null) => {
     callApi(GetLogs(serialNumber, severity)).then((response: any) => {
@@ -20,13 +22,17 @@ const Binnacle: React.FC = () => {
   };
 
   useEffect(() => {
-    callApi(GetDevices("1")).then((response: any) => {
-      setDevices(response);
-      if (response.length > 0) {
-        setSelectedDevice(response[0]);
-        fetchLogs(response[0].serialNumber);
-      }
-    });
+    if (userName != null) {
+      callApi(GetUser(userName)).then((user: any) => {
+        callApi(GetDevices(user.userId)).then((response: any) => {
+          setDevices(response);
+          if (response.length > 0) {
+            setSelectedDevice(response[0]);
+            fetchLogs(response[0].serialNumber);
+          }
+        });
+      });
+    }
   }, []);
 
   const handleDeviceSelect = (device: { serialNumber: string; name: string }) => {

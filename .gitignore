@@ -2,6 +2,9 @@
 BACK/.template.config/
 .vs/
 BACK/.vscode/
+BACK/coverage/
+BACK/coverage-report/
+BACK/coverage.runsettings
 BACK/deploy/
 BACK/src/NLayeredApi.1Template.Tests/bin/
 BACK/src/NLayeredApi.1Template.Tests/obj/
@@ -9,6 +12,7 @@ BACK/src/NLayeredApi.1Template.WebApi/bin/
 BACK/src/NLayeredApi.1Template.WebApi/obj/
 BACK/.dockerignore
 FRONT/node_modules
+FRONT/coverage
 
 # Archivos y carpetas comunes de Visual Studio y .NET
 bin/

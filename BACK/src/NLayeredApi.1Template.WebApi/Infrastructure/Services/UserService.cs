@@ -10,14 +10,16 @@ namespace NaviMente.WebApi.Infrastructure.Services
         private readonly IUserQueryRepository _userQueryRepository;
         private readonly IDeviceQueryRepository _deviceQueryRepository;
         private readonly ICodeQueryRepository _codeQueryRepository;
+        private readonly ICounterQueryRepository _counterQueryRepository;
         private readonly ILogger<UserController> _logger;
 
-        public UserService(ILogger<UserController> logger, IUserQueryRepository userQueryRepository, IDeviceQueryRepository deviceQueryRepository, ICodeQueryRepository codeQueryRepository)
+        public UserService(ILogger<UserController> logger, IUserQueryRepository userQueryRepository, IDeviceQueryRepository deviceQueryRepository, ICodeQueryRepository codeQueryRepository, ICounterQueryRepository counterQueryRepository)
         {
             _userQueryRepository = userQueryRepository;
             _deviceQueryRepository = deviceQueryRepository;
             _codeQueryRepository = codeQueryRepository;
             _logger = logger;
+            _counterQueryRepository = counterQueryRepository;
         }
 
         public long CreateUser(UserRegisterDTO userRegister)
@@ -26,9 +28,11 @@ namespace NaviMente.WebApi.Infrastructure.Services
                 throw new Exception("That username already exists");
 
             var hashedPassword = BCrypt.Net.BCrypt.HashPassword(userRegister.Password);
+            long userId = _counterQueryRepository.GetNextSequenceValue("userId");
 
             var newUser = new User
             {
+                UserId = userId,
                 Username = userRegister.Username,
                 Email = userRegister.Email,
                 Password = hashedPassword,
