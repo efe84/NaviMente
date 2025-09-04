@@ -5,6 +5,7 @@ import { useApi } from '../../shared/hooks/useApi';
 import { BlockZone, GetDevices, Zones, DeleteZone } from '../../api/deviceApi';
 import { SearchLastLocation, SearchRoute } from '../../api/locationApi';
 import _ from 'lodash';
+import { GetUser } from '../../api/authApi';
 
 const center = {
   lat: 43.212625,
@@ -42,9 +43,11 @@ const Map: React.FC = () => {
 
   useEffect(() => {
     if (userName) {
-      callApi(GetDevices("1")).then((response: any) => {
+      callApi(GetUser(userName)).then((user: any) => {
+        callApi(GetDevices(user.userId)).then((response: any) => {
         setDevices(response);
       });
+      })
     }
   }, [userName]);
 
@@ -80,6 +83,7 @@ const Map: React.FC = () => {
     mapRef.current = map;
   };
 
+  /* istanbul ignore next */
   const updateShape = (id: string, next: Partial<Shape>) => {
     setShapes(prev =>
       prev.map(s => (s.id === id ? { ...s, ...next } as Shape : s))

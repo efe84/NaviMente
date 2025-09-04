@@ -53,43 +53,6 @@ describe('Profile component', () => {
         });
     });
 
-    it('allows adding an additional phone', async () => {
-        const mockUser = {
-            userId: 1,
-            username: 'testuser',
-            email: 'user@example.com',
-            mainPhone: '1111',
-            otherPhones: [],
-            role: 1,
-            telegramChatId: null,
-        };
-
-        const updatedUser = {
-            ...mockUser,
-            otherPhones: ['999999999'],
-        };
-
-        mockCallApi
-            .mockResolvedValueOnce(mockUser) // GetUser
-            .mockResolvedValueOnce([])      // GetDevices
-            .mockResolvedValueOnce(updatedUser) // AddPhone
-
-        render(<Profile />, { wrapper: MemoryRouter });
-
-        fireEvent.click(await screen.findByAltText(/add phone/i));
-
-        const input = screen.getByPlaceholderText(/Enter new phone/i);
-        fireEvent.change(input, { target: { value: '999999999' } });
-
-        fireEvent.click(screen.getByRole('button', { name: /^add$/i }))
-
-        await waitFor(() => {
-            expect(mockCallApi).toHaveBeenCalledWith(authApi.AddPhone('testuser', '999999999'));
-        });
-
-        expect(await screen.findByText(/999999999/)).toBeInTheDocument();
-    });
-
     it('alerts when registering a device without required fields', async () => {
         mockCallApi
             .mockResolvedValueOnce({
@@ -254,42 +217,6 @@ describe('Profile component', () => {
         await waitFor(() => {
             expect(mockCallApi).toHaveBeenCalledWith(authApi.EditEmail('testuser', 'newemail@example.com'));
         });
-    });
-
-    it('allows removing an additional phone number', async () => {
-        const mockUser = {
-            userId: 1,
-            username: 'testuser',
-            email: 'user@example.com',
-            mainPhone: '1111',
-            otherPhones: ['222222222', '333333333'],
-            role: 1,
-            telegramChatId: null,
-        };
-
-        const updatedUser = {
-            ...mockUser,
-            otherPhones: ['333333333'],
-        };
-
-        mockCallApi
-            .mockResolvedValueOnce(mockUser)     // GetUser
-            .mockResolvedValueOnce([])           // GetDevices
-            .mockResolvedValueOnce(updatedUser); // RemovePhone
-
-        render(<Profile />, { wrapper: MemoryRouter });
-
-        expect(await screen.findByText(/222222222/)).toBeInTheDocument();
-
-        const deleteIcons = screen.getAllByAltText(/delete phone/i);
-        fireEvent.click(deleteIcons[0]);
-
-        await waitFor(() => {
-            expect(mockCallApi).toHaveBeenCalledWith(authApi.RemovePhone('testuser', '222222222'));
-        });
-
-        expect(screen.queryByText(/222222222/)).not.toBeInTheDocument();
-        expect(screen.getByText(/333333333/)).toBeInTheDocument();
     });
 
     it('shows alert when removing a phone number fails', async () => {

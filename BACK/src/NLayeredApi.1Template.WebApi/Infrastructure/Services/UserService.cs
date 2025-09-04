@@ -94,26 +94,6 @@ namespace NaviMente.WebApi.Infrastructure.Services
             return _userQueryRepository.GetByUsername(username);
         }
 
-        public User? AddPhone(string username, string newPhoneNumber)
-        {
-            _ = _userQueryRepository.GetByUsername(username) ?? throw new Exception($"User to edit not found {username}");
-            _userQueryRepository.AddPhone(username, newPhoneNumber);
-
-            _logger.LogInformation("Successfully added phone number for {username}", username);
-
-            return _userQueryRepository.GetByUsername(username);
-        }
-
-        public User? RemovePhone(string username, string phoneNumber)
-        {
-            _ = _userQueryRepository.GetByUsername(username) ?? throw new Exception($"User to edit not found {username}");
-            _userQueryRepository.RemovePhone(username, phoneNumber);
-
-            _logger.LogInformation("Successfully removed phone number for {username}", username);
-
-            return _userQueryRepository.GetByUsername(username);
-        }
-
         public string GenerateLinkCode(string userId)
         {
             string code = Guid.NewGuid().ToString("N")[..6].ToUpper();

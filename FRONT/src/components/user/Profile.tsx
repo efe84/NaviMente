@@ -16,7 +16,6 @@ type User = {
     username: string;
     email: string;
     mainPhone: string;
-    otherPhones: string[];
     role: number;
     telegramChatId: number;
     devices: Device[];
@@ -53,7 +52,6 @@ export default function Profile() {
                     username: result.username,
                     email: result.email,
                     mainPhone: result.mainPhone,
-                    otherPhones: result.otherPhones || [],
                     role: result.role,
                     telegramChatId: result.telegramChatId,
                     devices: []
@@ -72,45 +70,6 @@ export default function Profile() {
             })
         };
     }, [username]);
-
-    const addAdditionalPhone = () => {
-        if (user != null && username != null) {
-            callApi(AddPhone(username, newPhone)).then((result: any) => {
-                const parsedUser: User = {
-                    userId: result.userId,
-                    username: result.username,
-                    email: result.email,
-                    mainPhone: result.mainPhone,
-                    otherPhones: result.otherPhones || [],
-                    role: result.role,
-                    telegramChatId: result.telegramChatId,
-                    devices: []
-                };
-                setUser(parsedUser);
-            })
-        }
-    };
-
-    const removePhone = (phoneNumber: string) => {
-        if (user && username != null) {
-            callApi(RemovePhone(username, phoneNumber)).then((result: any) => {
-                const updatedUser: User = {
-                    userId: result.userId,
-                    username: result.username,
-                    email: result.email,
-                    mainPhone: result.mainPhone,
-                    otherPhones: result.otherPhones || [],
-                    role: result.role,
-                    telegramChatId: result.telegramChatId,
-                    devices: result.devices || []
-                };
-                setUser(updatedUser);
-            }).catch(err => {
-                console.error("Error removing phone:", err);
-                alert("Failed to remove phone number");
-            });
-        }
-    };
 
     const registerDevice = () => {
         if (!user) return;
@@ -171,7 +130,6 @@ export default function Profile() {
                                 username: result.username,
                                 email: result.email,
                                 mainPhone: result.mainPhone,
-                                otherPhones: result.otherPhones || [],
                                 role: result.role,
                                 telegramChatId: result.telegramChatId,
                                 devices: user?.devices || []
@@ -277,71 +235,6 @@ export default function Profile() {
                                         }
                                     }}
                                 />
-                            </div>
-                            <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
-                                <strong>Additional Phones: </strong>
-                                <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
-                                    {user?.otherPhones.map((phone, index) => (
-                                        <li key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start', marginBottom: '5px' }}>
-                                            <span>- {phone}</span>
-                                            <img
-                                                src={deleteIcon}
-                                                alt="Delete Phone"
-                                                style={{ width: '16px', height: '16px', cursor: 'pointer', marginLeft: '10px' }}
-                                                onClick={() => removePhone(phone)}
-                                            />
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div style={{ marginTop: "5px" }}>
-                                    <img
-                                        src={add}
-                                        alt="Add Phone"
-                                        style={{ width: '32px', height: '32px', cursor: 'pointer' }}
-                                        onClick={() => setShowAddPhone(!showAddPhone)}
-                                    />
-                                    {showAddPhone && (
-                                        <input
-                                            type="text"
-                                            placeholder="Enter new phone"
-                                            value={newPhone}
-                                            onChange={(e) => setNewPhone(e.target.value)}
-                                            style={{
-                                                marginLeft: '10px',
-                                                padding: '10px',
-                                                fontSize: '14px',
-                                                border: '1px solid #ddd',
-                                                borderRadius: '8px',
-                                                width: '200px',
-                                                outline: 'none',
-                                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                            }}
-                                        />
-                                    )}
-                                    {showAddPhone && (
-                                        <button
-                                            onClick={() => {
-                                                if (newPhone.trim()) {
-                                                    addAdditionalPhone();
-                                                    setNewPhone('');
-                                                    setShowAddPhone(false);
-                                                }
-                                            }}
-                                            style={{
-                                                marginLeft: '10px',
-                                                padding: '10px 15px',
-                                                fontSize: '14px',
-                                                backgroundColor: '#DFDFDF',
-                                                border: 'none',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                            }}
-                                        >
-                                            Add
-                                        </button>
-                                    )}
-                                </div>
                             </div>
                             <div style={{ marginBottom: '10px', padding: '10px 0', borderBottom: '1px solid #ddd' }}>
                                 <strong>Devices:</strong>

@@ -52,26 +52,6 @@ namespace NaviMente.WebApi.Infrastructure.Persistence.Repositories.Query
             );
         }
 
-        public void AddPhone(string username, string newPhoneNumber)
-        {
-            var updateDefinition = Builders<User>.Update.Push(u => u.OtherPhones, newPhoneNumber);
-
-            var result = _usersCollection.UpdateOne(
-                u => u.Username == username,
-                updateDefinition
-            );
-        }
-
-        public void RemovePhone(string username, string phoneNumber)
-        {
-            var updateDefinition = Builders<User>.Update.Pull(u => u.OtherPhones, phoneNumber);
-
-            var result = _usersCollection.UpdateOne(
-                u => u.Username == username,
-                updateDefinition
-            );
-        }
-
         public void UnlinkTelegram(string userId)
         {
             var filter = Builders<User>.Filter.Eq(u => u.UserId, long.Parse(userId));

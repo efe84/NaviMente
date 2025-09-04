@@ -23,9 +23,6 @@ namespace NaviMente.WebApi.Domain.Shared.Entities
 
         [BsonElement("mainPhone")]
         public string? MainPhone { get; set; }
-        
-        [BsonElement("otherPhones")]
-        public List<string>? OtherPhones { get; set; }
 
         [BsonElement("role")]
         public UserRolesEnum Role {  get; set; }

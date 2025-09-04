@@ -151,42 +151,6 @@ namespace NaviMente.WebApi.Controllers
             }
         }
 
-        [HttpPost("AddPhone")]
-        public IActionResult AddPhone([FromQuery] string username, [FromBody] NewPhoneDTO newPhone)
-        {
-            try
-            {
-                _logger.LogInformation("Añadiendo telefono al usuario {username}", username);
-                User? user = _userService.AddPhone(username, newPhone.NewPhone);
-                if (user == null)
-                    return BadRequest("Error añadiendo teléfono al usuario");
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error añadiendo telefono al usuario {username}", username);
-                return BadRequest();
-            }
-        }
-
-        [HttpDelete("DeletePhone")]
-        public IActionResult DeletePhone([FromQuery] string username, [FromQuery] string phoneNumber)
-        {
-            try
-            {
-                _logger.LogInformation("Eliminando telefono del usuario {username}", username);
-                User? user = _userService.RemovePhone(username, phoneNumber);
-                if (user == null)
-                    return BadRequest("Error eliminando teléfono al usuario");
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error eliminando el telefono al usuario {username}", username);
-                return BadRequest();
-            }
-        }
-
         [HttpPost("GenerateCode")]
         public IActionResult GenerateCode([FromQuery] string userId)
         {

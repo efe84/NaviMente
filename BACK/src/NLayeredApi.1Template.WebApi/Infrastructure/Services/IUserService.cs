@@ -10,8 +10,6 @@ namespace NaviMente.WebApi.Infrastructure.Services
         User GetUser(string userName);
         User? EditEmail(string username, string newEmail);
         User? EditMainPhone(string username, string newMainPhone);
-        User? AddPhone(string username, string newPhoneNumber);
-        User? RemovePhone(string username, string phoneNumber);
         string GenerateLinkCode(string userId);
         void UnlinkTelegram(string userId);
     }
